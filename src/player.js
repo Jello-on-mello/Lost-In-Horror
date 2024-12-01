@@ -10,6 +10,7 @@ export class Player {
         this.sprite.y = app.screen.height / 2; // Ustawienie pozycji gracza na środku ekranu (Y)
 
         this.speed = 5; // Prędkość poruszania się gracza
+        this.hp = 3; // Życia gracza
 
         // Tworzenie grafiki broni
         this.gun = new Graphics();
@@ -28,6 +29,15 @@ export class Player {
         this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false }; // Stan klawiszy
 
         this.setupControls(); // Inicjalizacja sterowania
+    }
+
+    takeDamage() {
+        this.hp--;
+        console.log(`Player HP: ${this.hp}`);
+        if (this.hp <= 0) {
+            console.log('Game Over!');
+            this.hp = 3; // Resetowanie HP dla testów
+        }
     }
 
     setupControls() {

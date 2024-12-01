@@ -1,6 +1,7 @@
 // main.js
 import { Application, Graphics, Assets } from 'pixi.js';
 import { Player } from './player.js';
+import { Enemy } from './enemy.js';
 
 (async () => {
     // Tworzenie aplikacji PIXI
@@ -19,27 +20,26 @@ import { Player } from './player.js';
     const playerTexture = await Assets.load('https://pixijs.io/examples/examples/assets/bunny.png');
     const player = new Player(app, playerTexture);
 
-    app.stage.addChild(player.sprite); // Dodanie gracza do sceny
+    app.stage.addChild(player.sprite);
 
-    // Tworzenie okręgu celu
     const targetCircle = new Graphics();
-    targetCircle.beginFill(0xffffff); // Kolor wypełnienia okręgu
-    targetCircle.drawCircle(0, 0, 8); // Rysowanie okręgu
+    targetCircle.beginFill(0xffffff);
+    targetCircle.drawCircle(0, 0, 8);
     targetCircle.endFill();
-    targetCircle.lineStyle(1, 0x111111, 0.87); // Obramowanie okręgu
-    app.stage.addChild(targetCircle); // Dodanie okręgu do sceny
+    targetCircle.lineStyle(1, 0x111111, 0.87);
+    app.stage.addChild(targetCircle);
 
-    // Ustawienie interakcji dla sceny
     app.stage.interactive = true;
-    app.stage.hitArea = app.screen; // Ustawienie obszaru aktywnego na cały ekran
+    app.stage.hitArea = app.screen;
 
-    // Obsługa ruchu celu (poruszanie wskaźnikiem)
     app.stage.on('pointermove', (e) => {
         targetCircle.position.copyFrom(e.global);
     });
 
-    // Dodanie funkcji aktualizacji do głównej pętli gry
+    const enemy = new Enemy(app, player); // Tworzenie wroga
+
     app.ticker.add(() => {
-        player.update(targetCircle); // Aktualizacja gracza i broni
+        player.update(targetCircle);
+        enemy.update(); // Aktualizacja wroga
     });
 })();
