@@ -1,0 +1,25 @@
+{
+  "name": "lost-in-horror",
+  "version": "1.0.0",
+  "description": "Gra Na Projekt Semestralny",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jello-on-mello/Lost-In-Horror.git"
+  },
+  "author": "Antoni Chmura",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jello-on-mello/Lost-In-Horror/issues"
+  },
+  "homepage": "https://github.com/Jello-on-mello/Lost-In-Horror#readme",
+  "devDependencies": {
+    "vite": "^6.0.1"
+  },
+  "dependencies": {
+    "pixi.js": "^8.6.2"
+  }
+}
