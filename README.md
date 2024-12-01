@@ -27,3 +27,8 @@
 ### Styl wizualny
 - Mroczny, pikselowy styl z przygaszoną paletą kolorów: brązy, szarości i chore zielenie.
 - Dynamiczne oświetlenie i cienie potęgują napięcie, a migoczące latarnie rzucają upiorne sylwetki.
+
+---
+
+## Używane technologie 
+- PixiJs [Site](https://pixijs.com) [github depository](https://github.com/pixijs/pixijs)
