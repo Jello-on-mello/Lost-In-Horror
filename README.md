@@ -31,4 +31,5 @@
 ---
 
 ## Używane technologie 
-- PixiJs [Site](https://pixijs.com) [github depository](https://github.com/pixijs/pixijs)
+- [PixiJs](https://pixijs.com) [Github](https://github.com/pixijs/pixijs)
+- [Piksel](https://www.piskelapp.com) [Github](https://github.com/piskelapp/piskel)
