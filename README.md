@@ -1,6 +1,6 @@
 # Lost in Horror
 
-**Lost in Horror** to gra typu Top-down rougelike , w której gracz znajduje w przeklętym lesie spowitym mgłą. Jako jedyny ocalały członek nieudanej ekspedycji, musisz zbadać las, rozwiązywać tajemnicze zagadki i unikać groteskowych stworzeń, które polują w ciemnościach.
+**Lost in Horror** to gra typu Top-down Rouge-like , w której gracz znajduje w przeklętym lesie spowitym mgłą. Jako jedyny ocalały członek nieudanej ekspedycji, musisz zbadać las, rozwiązywać tajemnicze zagadki i unikać groteskowych stworzeń, które polują w ciemnościach.
 
 ---
 
