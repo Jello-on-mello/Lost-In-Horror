@@ -4,7 +4,9 @@ import { Player } from './player.js';
 
 (async () => {
     // Tworzenie aplikacji PIXI
-    const app = new Application({
+    const app = new Application();
+
+    await app.init({
         width: window.innerWidth, // Szerokość aplikacji (dopasowana do okna przeglądarki)
         height: window.innerHeight, // Wysokość aplikacji
         antialias: true, // Włącz antyaliasing dla lepszej jakości grafiki
