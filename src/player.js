@@ -5,7 +5,7 @@ export class Player {
         this.app = app;
         this.sprite = new Sprite(playerTexture);
         this.sprite.anchor.set(0.5);
-        this.sprite.x = app.screen.width / 2;
+        this.sprite.x = app.screen.width - 850;
         this.sprite.y = app.screen.height / 2;
 
         this.speed = 5;

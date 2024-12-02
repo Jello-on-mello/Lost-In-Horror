@@ -19,8 +19,8 @@ export class Enemy {
     }
 
     respawn() {
-        this.sprite.x = this.app.screen.width / 2 + 222;
-        this.sprite.y = this.app.screen.height / 2 + 222;
+        this.sprite.x = this.app.screen.width - 150; 
+        this.sprite.y = this.app.screen.height / 2 ;
         this.hp = 5; // Reset zdrowia
     }
 
