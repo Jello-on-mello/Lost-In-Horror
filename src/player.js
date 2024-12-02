@@ -31,7 +31,7 @@ export class Player {
         this.reloadAnimationContainer = new Container();
         this.reloadArrows = [];
         this.initReloadAnimation();
-        app.stage.addChild(this.reloadAnimationContainer);
+        this.sprite.addChild(this.reloadAnimationContainer);
 
         this.setupControls();
     }
@@ -112,40 +112,59 @@ export class Player {
     }
 
     initReloadAnimation() {
-        for (let i = 0; i < 2; i++) {
+        const spinRadius = 50; // Larger radius for a noticeable spin
+    
+        for (let i = 0; i < 3; i++) {
             const arrow = new Graphics();
             arrow.beginFill(0xffffff);
-            arrow.drawPolygon([-10, 0, 10, 5, 10, -5]);
+            arrow.drawPolygon([0, 0, 10, 5, 10, -5]);
             arrow.endFill();
-            arrow.rotation = (i * Math.PI) + Math.PI / 4;
+    
+            // Set initial positions; will be updated in the animation loop
+            arrow.x = 0;
+            arrow.y = 0;
+    
             this.reloadArrows.push(arrow);
             this.reloadAnimationContainer.addChild(arrow);
         }
+    
         this.reloadAnimationContainer.visible = false;
+        this.sprite.addChild(this.reloadAnimationContainer); // Attach animation to player
     }
-
+    
     startReloadAnimation() {
         this.reloadAnimationContainer.visible = true;
-        this.reloadAnimationContainer.position.set(this.sprite.x, this.sprite.y);
-
+        let angle = 0;
+        const spinRadius = 50; // Larger spin radius
+        const spinSpeed = 0.02; // Slower spin speed
+    
         this.reloadTicker = this.app.ticker.add(() => {
+            angle += spinSpeed; // Slow the rotation
             this.reloadArrows.forEach((arrow, index) => {
-                arrow.rotation += 0.1 * (index === 0 ? 1 : -1);
+                const offsetAngle = angle + ((index * Math.PI * 2) / 3); // Space arrows evenly
+                arrow.x = Math.cos(offsetAngle) * spinRadius;
+                arrow.y = Math.sin(offsetAngle) * spinRadius;
             });
+    
+            // Ensure the animation stays centered on the player
+            this.reloadAnimationContainer.x = 0;
+            this.reloadAnimationContainer.y = 0;
         });
     }
-
+    
     completeReloadAnimation() {
         this.app.ticker.remove(this.reloadTicker);
         this.reloadArrows.forEach((arrow) => {
-            arrow.tint = 0x00ff00; // Turn green
+            arrow.tint = 0x00ff00; // Turn arrows green to indicate completion
         });
-
+    
         setTimeout(() => {
             this.reloadAnimationContainer.visible = false;
-            this.reloadArrows.forEach((arrow) => (arrow.tint = 0xffffff));
+            this.reloadArrows.forEach((arrow) => (arrow.tint = 0xffffff)); // Reset color
         }, 500);
     }
+    
+    
 
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
