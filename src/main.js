@@ -4,17 +4,19 @@ import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 
 (async () => {
+    
     // Tworzenie aplikacji PIXI
+    const Monitor = document.getElementById('myCanvas');
     const app = new Application();
 
     await app.init({
-        width: window.innerWidth, // Szerokość aplikacji (dopasowana do okna przeglądarki)
-        height: window.innerHeight, // Wysokość aplikacji
+        view: Monitor,
+        width: 1000,
+        height: 500,// Wysokość aplikacji
         antialias: true, // Włącz antyaliasing dla lepszej jakości grafiki
-        backgroundColor: 0x1099bb // Kolor tła
+        backgroundColor: 0x1099bb, // Kolor tła
     });
 
-    document.body.appendChild(app.view); // Dodanie widoku aplikacji do dokumentu
 
     // Load assets for player gun and animations
     const RechamberAnimation = [

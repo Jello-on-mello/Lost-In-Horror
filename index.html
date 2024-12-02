@@ -5,17 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lost In Horror</title>
     <style>
-        body {
-        margin: 0 ;
+         body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full viewport height */
+            background-color: #121212; /* Dark background for horror theme */
+            color: #ffffff; /* White text for contrast */
+            font-family: Arial, sans-serif; /* Clean font */
+        }
+
+        .GameDiv {
+            position: relative;
+            border: 2px solid #ffffff; /* White border around the canvas */
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); /* Subtle shadow for depth */
+            overflow: hidden; /* Prevent overflow */
         }
 
         canvas {
-            display: block;
-            margin: 0 auto;
+            display: block; /* Remove default inline spacing */
+            width: 100%; /* Make canvas responsive */
+            height: auto; /* Maintain aspect ratio */
+        }
+
+        h1 {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 2em; /* Larger font for title */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for text */
         }
     </style>
 </head>
 <body>
-    <script type="module" src="/src/main.js"></script>
-</body>
+    <div class="GameDiv">
+        <canvas id="myCanvas"></canvas>
+    </div>  
+  <script type="module" src="/src/main.js"></script>
+</body> 
 </html>
