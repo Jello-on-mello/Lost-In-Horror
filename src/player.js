@@ -1,10 +1,9 @@
-import { Sprite, Graphics, AnimatedSprite, Assets } from 'pixi.js';
+import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'pixi.js';
 
 export class Player {
-    
-    constructor(app, PlayerTexture, GunTexture, RechamberAnimation) {
+    constructor(app, playerTexture, gunTexture, rechamberAnimation) {
         this.app = app;
-        this.sprite = new Sprite(PlayerTexture);
+        this.sprite = new Sprite(playerTexture);
         this.sprite.anchor.set(0.5);
         this.sprite.x = app.screen.width / 2;
         this.sprite.y = app.screen.height / 2;
@@ -12,14 +11,12 @@ export class Player {
         this.speed = 5;
         this.hp = 3;
 
-        // Animowany sprite dla broni
-        this.gun = new AnimatedSprite(
-            RechamberAnimation.map((frame) => Assets.get(frame))
-        );
-        
+        // Gun animation setup
+        this.gun = new AnimatedSprite(rechamberAnimation.map((frame) => Assets.get(frame)));
         this.gun.anchor.set(0.5);
-        this.gun.animationSpeed = 0.2; // Szybkość animacji
-        this.gun.loop = false; // Animacja nie zapętla się
+        this.gun.animationSpeed = 0.1;
+        this.gun.loop = false;
+        this.gun.texture = gunTexture;
         this.sprite.addChild(this.gun);
 
         this.bullets = [];
@@ -30,6 +27,12 @@ export class Player {
         this.lastShotTime = 0;
         this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
 
+        // Reload animation
+        this.reloadAnimationContainer = new Container();
+        this.reloadArrows = [];
+        this.initReloadAnimation();
+        app.stage.addChild(this.reloadAnimationContainer);
+
         this.setupControls();
     }
 
@@ -38,12 +41,11 @@ export class Player {
         console.log(`Player HP: ${this.hp}`);
         if (this.hp <= 0) {
             console.log('Game Over!');
-            this.hp = 3; // Resetowanie HP dla testów
+            this.hp = 3; // Reset for testing purposes
         }
     }
 
     setupControls() {
-        // Obsługa naciśnięcia klawiszy
         window.addEventListener('keydown', (e) => {
             if (e.code === 'ArrowUp') this.keys.up = true;
             if (e.code === 'ArrowDown') this.keys.down = true;
@@ -53,7 +55,6 @@ export class Player {
             if (e.code === 'KeyR') this.keys.reload = true;
         });
 
-        // Obsługa zwolnienia klawiszy
         window.addEventListener('keyup', (e) => {
             if (e.code === 'ArrowUp') this.keys.up = false;
             if (e.code === 'ArrowDown') this.keys.down = false;
@@ -64,11 +65,10 @@ export class Player {
         });
     }
 
-    // Funkcja odpowiedzialna za strzelanie z broni
     shootShotgun() {
         if (this.currentShells <= 0 || this.isReloading) return;
 
-        const spreadAngle = 0.261799; // ~15 stopni
+        const spreadAngle = 0.261799; // ~15 degrees
         const numberOfBullets = 5;
         const shotDelay = 10;
 
@@ -95,58 +95,89 @@ export class Player {
         }
 
         this.currentShells--;
-        this.gun.gotoAndPlay(0); // Odtwórz animację strzelania
+        this.gun.gotoAndPlay(0); // Play firing animation
     }
 
-    // Funkcja odpowiedzialna za przeładowanie broni
     reload() {
         if (!this.isReloading && this.currentShells < this.MAX_SHELLS) {
             this.isReloading = true;
+            this.startReloadAnimation();
+
             setTimeout(() => {
                 this.currentShells = this.MAX_SHELLS;
                 this.isReloading = false;
-            }, 2000); // 2 sekundy przeładowania
+                this.completeReloadAnimation();
+            }, 2000); // 2 seconds reload time
         }
     }
 
-    // Funkcja aktualizująca rotację broni w kierunku celu
+    initReloadAnimation() {
+        for (let i = 0; i < 2; i++) {
+            const arrow = new Graphics();
+            arrow.beginFill(0xffffff);
+            arrow.drawPolygon([-10, 0, 10, 5, 10, -5]);
+            arrow.endFill();
+            arrow.rotation = (i * Math.PI) + Math.PI / 4;
+            this.reloadArrows.push(arrow);
+            this.reloadAnimationContainer.addChild(arrow);
+        }
+        this.reloadAnimationContainer.visible = false;
+    }
+
+    startReloadAnimation() {
+        this.reloadAnimationContainer.visible = true;
+        this.reloadAnimationContainer.position.set(this.sprite.x, this.sprite.y);
+
+        this.reloadTicker = this.app.ticker.add(() => {
+            this.reloadArrows.forEach((arrow, index) => {
+                arrow.rotation += 0.1 * (index === 0 ? 1 : -1);
+            });
+        });
+    }
+
+    completeReloadAnimation() {
+        this.app.ticker.remove(this.reloadTicker);
+        this.reloadArrows.forEach((arrow) => {
+            arrow.tint = 0x00ff00; // Turn green
+        });
+
+        setTimeout(() => {
+            this.reloadAnimationContainer.visible = false;
+            this.reloadArrows.forEach((arrow) => (arrow.tint = 0xffffff));
+        }, 500);
+    }
+
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
         const dy = targetCircle.y - this.sprite.y;
         this.gun.rotation = Math.atan2(dy, dx);
     }
 
-    // Główna funkcja aktualizacji gracza
     update(targetCircle) {
-        if (this.keys.up) this.sprite.y -= this.speed; // Ruch do góry
-        if (this.keys.down) this.sprite.y += this.speed; // Ruch w dół
-        if (this.keys.left) this.sprite.x -= this.speed; // Ruch w lewo
-        if (this.keys.right) this.sprite.x += this.speed; // Ruch w prawo
+        if (this.keys.up) this.sprite.y -= this.speed;
+        if (this.keys.down) this.sprite.y += this.speed;
+        if (this.keys.left) this.sprite.x -= this.speed;
+        if (this.keys.right) this.sprite.x += this.speed;
 
-        // Zapobiegaj wychodzeniu poza ekran
         this.sprite.x = Math.max(0, Math.min(this.sprite.x, this.app.screen.width));
         this.sprite.y = Math.max(0, Math.min(this.sprite.y, this.app.screen.height));
 
-        // Strzelanie
         if (this.keys.shoot && Date.now() - this.lastShotTime >= this.shotCooldown) {
             this.shootShotgun();
-            this.lastShotTime = Date.now(); // Zapisz czas strzału
+            this.lastShotTime = Date.now();
         }
 
-        // Przeładowanie
         if (this.keys.reload) {
             this.reload();
         }
 
         this.updateGunRotation(targetCircle);
 
-        // Aktualizacja pozycji pocisków
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const bullet = this.bullets[i];
             bullet.x += bullet.vx;
             bullet.y += bullet.vy;
 
-            // Usunięcie pocisków, które wyszły poza ekran
             if (bullet.x < 0 || bullet.x > this.app.screen.width || bullet.y < 0 || bullet.y > this.app.screen.height) {
                 this.bullets.splice(i, 1);
                 bullet.destroy();

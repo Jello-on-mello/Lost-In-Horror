@@ -16,21 +16,25 @@ import { Enemy } from './enemy.js';
 
     document.body.appendChild(app.view); // Dodanie widoku aplikacji do dokumentu
 
-    // Wczytanie tekstur gracza i inicjalizacja obiektu gracza
+    // Load assets for player gun and animations
     const RechamberAnimation = [
-        '/src/Sprites/TOZ-106_Fired_4.png',
-        '/src/Sprites/TOZ-106_Fired_1.png',
-        '/src/Sprites/TOZ-106_Fired_2.png',
-        '/src/Sprites/TOZ-106_Fired_3.png',
-        '/src/Sprites/TOZ-106_Fired_4.png'
+        '/src/Sprites/TOZ-106/TOZ-106_Fired_4.png',
+        '/src/Sprites/TOZ-106/TOZ-106_Fired_1.png',
+        '/src/Sprites/TOZ-106/TOZ-106_Fired_2.png',
+        '/src/Sprites/TOZ-106/TOZ-106_Fired_3.png',
+        '/src/Sprites/TOZ-106/TOZ-106_Fired_4.png'
     ];
-    await Assets.load(RechamberAnimation);
-    const GunTexture = await Assets.load('/src/Sprites/TOZ-106.png');
-    const playerTexture = await Assets.load('https://pixijs.io/examples/examples/assets/bunny.png');
-    const player = new Player(app, playerTexture, GunTexture, RechamberAnimation);
 
+    // Preload all assets
+    await Assets.load(RechamberAnimation);
+    const GunTexture = await Assets.load('/src/Sprites/TOZ-106/TOZ-106.png');
+    const playerTexture = await Assets.load('https://pixijs.io/examples/examples/assets/bunny.png');
+
+    // Create player instance
+    const player = new Player(app, playerTexture, GunTexture, RechamberAnimation);
     app.stage.addChild(player.sprite);
 
+    // Create and configure a target circle for aiming
     const targetCircle = new Graphics();
     targetCircle.beginFill(0xffffff);
     targetCircle.drawCircle(0, 0, 8);
@@ -38,17 +42,22 @@ import { Enemy } from './enemy.js';
     targetCircle.lineStyle(1, 0x111111, 0.87);
     app.stage.addChild(targetCircle);
 
+    // Enable interactivity and set hit area to the entire screen
     app.stage.interactive = true;
     app.stage.hitArea = app.screen;
 
+    // Update target position to follow the mouse
     app.stage.on('pointermove', (e) => {
         targetCircle.position.copyFrom(e.global);
     });
 
-    const enemy = new Enemy(app, player); // Tworzenie wroga
+    // Initialize an enemy instance
+    const enemy = new Enemy(app, player);
+    app.stage.addChild(enemy.sprite);
 
+    // Main game loop
     app.ticker.add(() => {
-        player.update(targetCircle);
-        enemy.update(); // Aktualizacja wroga
+        player.update(targetCircle); // Update player
+        enemy.update();              // Update enemy
     });
 })();
