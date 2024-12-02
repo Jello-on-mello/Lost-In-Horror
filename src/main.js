@@ -16,9 +16,18 @@ import { Enemy } from './enemy.js';
 
     document.body.appendChild(app.view); // Dodanie widoku aplikacji do dokumentu
 
-    // Wczytanie tekstury gracza i inicjalizacja obiektu gracza
+    // Wczytanie tekstur gracza i inicjalizacja obiektu gracza
+    const RechamberAnimation = [
+        '/src/Sprites/TOZ-106_Fired_4.png',
+        '/src/Sprites/TOZ-106_Fired_1.png',
+        '/src/Sprites/TOZ-106_Fired_2.png',
+        '/src/Sprites/TOZ-106_Fired_3.png',
+        '/src/Sprites/TOZ-106_Fired_4.png'
+    ];
+    await Assets.load(RechamberAnimation);
+    const GunTexture = await Assets.load('/src/Sprites/TOZ-106.png');
     const playerTexture = await Assets.load('https://pixijs.io/examples/examples/assets/bunny.png');
-    const player = new Player(app, playerTexture);
+    const player = new Player(app, playerTexture, GunTexture, RechamberAnimation);
 
     app.stage.addChild(player.sprite);
 

@@ -1,34 +1,36 @@
-// player.js
-import { Sprite, Graphics } from 'pixi.js';
+import { Sprite, Graphics, AnimatedSprite, Assets } from 'pixi.js';
 
 export class Player {
-    constructor(app, texture) {
+    
+    constructor(app, PlayerTexture, GunTexture, RechamberAnimation) {
         this.app = app;
-        this.sprite = new Sprite(texture); // Tworzenie sprite'a gracza
-        this.sprite.anchor.set(0.5); // Ustawienie punktu kotwiczenia na środek
-        this.sprite.x = app.screen.width / 2; // Ustawienie pozycji gracza na środku ekranu (X)
-        this.sprite.y = app.screen.height / 2; // Ustawienie pozycji gracza na środku ekranu (Y)
+        this.sprite = new Sprite(PlayerTexture);
+        this.sprite.anchor.set(0.5);
+        this.sprite.x = app.screen.width / 2;
+        this.sprite.y = app.screen.height / 2;
 
-        this.speed = 5; // Prędkość poruszania się gracza
-        this.hp = 3; // Życia gracza
+        this.speed = 5;
+        this.hp = 3;
 
-        // Tworzenie grafiki broni
-        this.gun = new Graphics();
-        this.gun.beginFill(0x000000); // Kolor broni
-        this.gun.drawRect(-5, -20, 10, 30); // Prostokąt reprezentujący broń
-        this.gun.endFill();
-        this.sprite.addChild(this.gun); // Dodanie broni jako dziecka sprite'a gracza
+        // Animowany sprite dla broni
+        this.gun = new AnimatedSprite(
+            RechamberAnimation.map((frame) => Assets.get(frame))
+        );
+        
+        this.gun.anchor.set(0.5);
+        this.gun.animationSpeed = 0.2; // Szybkość animacji
+        this.gun.loop = false; // Animacja nie zapętla się
+        this.sprite.addChild(this.gun);
 
-        // Właściwości strzelby
-        this.bullets = []; // Tablica do przechowywania pocisków
-        this.currentShells = 4; // Aktualna liczba pocisków w magazynku
-        this.MAX_SHELLS = 4; // Maksymalna liczba pocisków
-        this.isReloading = false; // Flaga wskazująca, czy przeładowanie trwa
-        this.shotCooldown = 500; // Czas oczekiwania pomiędzy strzałami w milisekundach
-        this.lastShotTime = 0; // Czas ostatniego strzału
-        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false }; // Stan klawiszy
+        this.bullets = [];
+        this.currentShells = 4;
+        this.MAX_SHELLS = 4;
+        this.isReloading = false;
+        this.shotCooldown = 500;
+        this.lastShotTime = 0;
+        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
 
-        this.setupControls(); // Inicjalizacja sterowania
+        this.setupControls();
     }
 
     takeDamage() {
@@ -47,8 +49,8 @@ export class Player {
             if (e.code === 'ArrowDown') this.keys.down = true;
             if (e.code === 'ArrowLeft') this.keys.left = true;
             if (e.code === 'ArrowRight') this.keys.right = true;
-            if (e.code === 'Space') this.keys.shoot = true; // Strzelanie za pomocą spacji
-            if (e.code === 'KeyR') this.keys.reload = true; // Przeładowanie za pomocą 'R'
+            if (e.code === 'Space') this.keys.shoot = true;
+            if (e.code === 'KeyR') this.keys.reload = true;
         });
 
         // Obsługa zwolnienia klawiszy
@@ -57,42 +59,43 @@ export class Player {
             if (e.code === 'ArrowDown') this.keys.down = false;
             if (e.code === 'ArrowLeft') this.keys.left = false;
             if (e.code === 'ArrowRight') this.keys.right = false;
-            if (e.code === 'Space') this.keys.shoot = false; // Przestanie strzelać
-            if (e.code === 'KeyR') this.keys.reload = false; // Przestanie przeładowywać
+            if (e.code === 'Space') this.keys.shoot = false;
+            if (e.code === 'KeyR') this.keys.reload = false;
         });
     }
 
     // Funkcja odpowiedzialna za strzelanie z broni
     shootShotgun() {
-        if (this.currentShells <= 0 || this.isReloading) return; // Brak amunicji lub przeładowanie w toku
+        if (this.currentShells <= 0 || this.isReloading) return;
 
-        const spreadAngle = 0.261799; // Kąt rozrzutu strzału w radianach (~15 stopni)
-        const numberOfBullets = 5; // Liczba pocisków w jednym strzale
-        const shotDelay = 10; // Opóźnienie pomiędzy strzałami w milisekundach
+        const spreadAngle = 0.261799; // ~15 stopni
+        const numberOfBullets = 5;
+        const shotDelay = 10;
 
         for (let i = 0; i < numberOfBullets; i++) {
             setTimeout(() => {
                 const bullet = new Graphics();
-                bullet.beginFill(0xff0000); // Kolor pocisku
-                bullet.drawRect(-2, -5, 4, 10); // Kształt pocisku
+                bullet.beginFill(0xff0000);
+                bullet.drawRect(-2, -5, 4, 10);
                 bullet.endFill();
 
-                const offsetX = Math.cos(this.gun.rotation) * 30; // Pozycja początkowa pocisku (X)
-                const offsetY = Math.sin(this.gun.rotation) * 30; // Pozycja początkowa pocisku (Y)
+                const offsetX = Math.cos(this.gun.rotation) * 30;
+                const offsetY = Math.sin(this.gun.rotation) * 30;
 
                 bullet.x = this.sprite.x + this.gun.x + offsetX;
                 bullet.y = this.sprite.y + this.gun.y + offsetY;
 
                 const randomAngle = this.gun.rotation + (Math.random() - 0.5) * spreadAngle;
-                bullet.vx = Math.cos(randomAngle) * 5; // Prędkość pocisku w osi X
-                bullet.vy = Math.sin(randomAngle) * 5; // Prędkość pocisku w osi Y
+                bullet.vx = Math.cos(randomAngle) * 5;
+                bullet.vy = Math.sin(randomAngle) * 5;
 
-                this.app.stage.addChild(bullet); // Dodanie pocisku do sceny
-                this.bullets.push(bullet); // Przechowywanie pocisku w tablicy
+                this.app.stage.addChild(bullet);
+                this.bullets.push(bullet);
             }, i * shotDelay);
         }
 
-        this.currentShells--; // Zmniejsz licznik pocisków
+        this.currentShells--;
+        this.gun.gotoAndPlay(0); // Odtwórz animację strzelania
     }
 
     // Funkcja odpowiedzialna za przeładowanie broni
@@ -100,9 +103,9 @@ export class Player {
         if (!this.isReloading && this.currentShells < this.MAX_SHELLS) {
             this.isReloading = true;
             setTimeout(() => {
-                this.currentShells = this.MAX_SHELLS; // Uzupełnij magazynek
-                this.isReloading = false; // Zakończ przeładowanie
-            }, 2000); // Czas przeładowania: 2 sekundy
+                this.currentShells = this.MAX_SHELLS;
+                this.isReloading = false;
+            }, 2000); // 2 sekundy przeładowania
         }
     }
 
@@ -110,7 +113,7 @@ export class Player {
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
         const dy = targetCircle.y - this.sprite.y;
-        this.gun.rotation = Math.atan2(dy, dx); // Obliczanie kąta
+        this.gun.rotation = Math.atan2(dy, dx);
     }
 
     // Główna funkcja aktualizacji gracza
@@ -135,7 +138,7 @@ export class Player {
             this.reload();
         }
 
-        this.updateGunRotation(targetCircle); // Aktualizuj rotację broni
+        this.updateGunRotation(targetCircle);
 
         // Aktualizacja pozycji pocisków
         for (let i = this.bullets.length - 1; i >= 0; i--) {
@@ -146,7 +149,7 @@ export class Player {
             // Usunięcie pocisków, które wyszły poza ekran
             if (bullet.x < 0 || bullet.x > this.app.screen.width || bullet.y < 0 || bullet.y > this.app.screen.height) {
                 this.bullets.splice(i, 1);
-                bullet.destroy(); // Usuwanie obiektu pocisku
+                bullet.destroy();
             }
         }
     }
