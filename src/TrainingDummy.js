@@ -10,6 +10,11 @@ export class TrainingDummy {
         this.idleSprite.anchor.set(0.5);
         this.idleSprite.x = app.screen.width - 150;
         this.idleSprite.y = app.screen.height / 2;
+
+        // Scale the idle sprite to be smaller (half size)
+        this.idleSprite.scale.set(0.5);
+        this.scale = 0.5;  // Store the scale factor for manual bounding box calculation
+
         this.app.stage.addChild(this.idleSprite);
 
         // Create the shot animation
@@ -20,6 +25,10 @@ export class TrainingDummy {
         this.shotAnimation.visible = false;
         this.shotAnimation.x = this.idleSprite.x;
         this.shotAnimation.y = this.idleSprite.y;
+
+        // Scale the shot animation to match the reduced size
+        this.shotAnimation.scale.set(0.5);
+
         this.app.stage.addChild(this.shotAnimation);
 
         // Create the depleted animation
@@ -30,10 +39,15 @@ export class TrainingDummy {
         this.depletedAnimation.visible = false;
         this.depletedAnimation.x = this.idleSprite.x;
         this.depletedAnimation.y = this.idleSprite.y;
+
+        // Scale the depleted animation to match the reduced size
+        this.depletedAnimation.scale.set(0.5);
+
         this.app.stage.addChild(this.depletedAnimation);
     }
 
     takeDamage() {
+        // No cooldown check, damage is always applied
         this.hp--;
         console.log(`Enemy HP: ${this.hp}`);
 
@@ -80,7 +94,24 @@ export class TrainingDummy {
      * @param {Graphics} bullet - The bullet object.
      */
     checkCollision(bullet) {
-        if (this.idleSprite.getBounds().intersects(bullet.getBounds())) {
+        // Manually calculate the scaled bounding box of the dummy
+        const enemyBounds = {
+            x: this.idleSprite.x - this.idleSprite.width * this.scale / 2,
+            y: this.idleSprite.y - this.idleSprite.height * this.scale / 2,
+            width: this.idleSprite.width * this.scale,
+            height: this.idleSprite.height * this.scale
+        };
+
+        // Get the bounding box of the bullet
+        const bulletBounds = bullet.getBounds();
+
+        // Faster rectangle intersection check
+        if (
+            bulletBounds.x < enemyBounds.x + enemyBounds.width &&
+            bulletBounds.x + bulletBounds.width > enemyBounds.x &&
+            bulletBounds.y < enemyBounds.y + enemyBounds.height &&
+            bulletBounds.y + bulletBounds.height > enemyBounds.y
+        ) {
             this.takeDamage();
             bullet.destroy(); // Remove the bullet after collision
         }
