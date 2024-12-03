@@ -1,10 +1,11 @@
 import { Application, Graphics, Assets } from 'pixi.js';
 import { Player } from './player.js';
-import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
+import { TrainingDummy } from './TrainingDummy.js';
+import { MapManager } from './mapManager.js';
 
 (async () => {
     
-    // Tworzenie aplikacji PIXI
+    // Create PIXI application
     const Monitor = document.getElementById('myCanvas');
     const app = new Application();
 
@@ -15,6 +16,8 @@ import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
         antialias: true,
         backgroundColor: 0x1099bb,
     });
+
+    const mapManager = new MapManager(app, Player);
 
     // Create and configure a target circle for aiming
     const targetCircle = new Graphics();
@@ -42,8 +45,8 @@ import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
         '/src/Sprites/TOZ-106/TOZ-106_Fired_4.png'
     ];
 
-    const EnemyIdle = 'src/Sprites/Training Dummy/TrainingDummy_Idle.png';
-    const EnemyShot = [
+    const TrainingDummyIdle = 'src/Sprites/Training Dummy/TrainingDummy_Idle.png';
+    const TrainingDummyShot = [
         'src/Sprites/Training Dummy/TrainingDummy_Damage_1.png',
         'src/Sprites/Training Dummy/TrainingDummy_Damage_2.png',
         'src/Sprites/Training Dummy/TrainingDummy_Damage_3.png',
@@ -52,7 +55,7 @@ import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
         'src/Sprites/Training Dummy/TrainingDummy_Damage_6.png',
         'src/Sprites/Training Dummy/TrainingDummy_Damage_7.png'
     ];
-    const EnemyDepleted = [
+    const TrainingDummyDepleted = [
         'src/Sprites/Training Dummy/TrainingDummy_Death_1.png',
         'src/Sprites/Training Dummy/TrainingDummy_Death_2.png',
         'src/Sprites/Training Dummy/TrainingDummy_Death_3.png',
@@ -67,17 +70,39 @@ import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
     await Assets.load(RechamberAnimation);
     const GunTexture = await Assets.load('/src/Sprites/TOZ-106/TOZ-106.png');
     const playerTexture = await Assets.load('https://pixijs.io/examples/examples/assets/bunny.png');
-    const idleTexture = await Assets.load(EnemyIdle);
-    await Assets.load(EnemyShot);
-    await Assets.load(EnemyDepleted);
+    await Assets.load(TrainingDummyIdle);
+    await Assets.load(TrainingDummyShot);
+    await Assets.load(TrainingDummyDepleted);
 
     // Create player instance
     const player = new Player(app, playerTexture, GunTexture, RechamberAnimation);
     app.stage.addChild(player.sprite);
 
     // Create the enemy instance
-    const enemy = new TrainingDummy(app, idleTexture, EnemyShot, EnemyDepleted);
-    
+    const enemy = new TrainingDummy(app, TrainingDummyIdle, TrainingDummyShot, TrainingDummyDepleted);
+
+    // Create door object (this is for the transition between rooms)
+    const door = new Graphics();
+    door.beginFill(0xff0000);  // Red color for the door
+    door.drawRect(0, 0, 50, 50); // Door size (width x height)
+    door.endFill();
+    door.x = 650;  // Position on the canvas
+    door.y = 650;
+    app.stage.addChild(door);
+
+    door.interactive = true;
+    door.buttonMode = true;
+
+    // Handle the transition when the player walks through the door
+    door.on('pointerdown', () => {
+        console.log("Player entered the door, transitioning to next room...");
+
+        // Transition to the next room
+        mapManager.loadNextRoom();  // Assuming MapManager handles room transitions
+        player.sprite.x = 50; // Move player to the entrance of the new room (near the door)
+        player.sprite.y = 50;
+    });
+
     // Main game loop
     app.ticker.add(() => {
         player.update(targetCircle); // Update player
@@ -103,5 +128,5 @@ import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
                 bullet.destroy();
             }
         }
-});
+    });
 })();

@@ -192,6 +192,52 @@ export class Player {
         this.gun.rotation = Math.atan2(dy, dx);
     }
 
+    update(targetCircle, door) {
+        // Player movement controls
+        if (this.keys.up) this.sprite.y -= this.speed;
+        if (this.keys.down) this.sprite.y += this.speed;
+        if (this.keys.left) this.sprite.x -= this.speed;
+        if (this.keys.right) this.sprite.x += this.speed;
+    
+        this.sprite.x = Math.max(0, Math.min(this.sprite.x, this.app.screen.width));
+        this.sprite.y = Math.max(0, Math.min(this.sprite.y, this.app.screen.height));
+    
+        // Check if the player is touching the door
+        this.checkDoorCollision(door);
+    
+        if (this.keys.shoot && Date.now() - this.lastShotTime >= this.shotCooldown) {
+            this.shootShotgun();
+            this.lastShotTime = Date.now();
+        }
+    
+        if (this.keys.reload) {
+            this.reload();
+        }
+    
+        this.updateGunRotation(targetCircle);
+    
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+            const bullet = this.bullets[i];
+            bullet.x += bullet.vx;
+            bullet.y += bullet.vy;
+    
+            if (bullet.x < 0 || bullet.x > this.app.screen.width || bullet.y < 0 || bullet.y > this.app.screen.height) {
+                this.bullets.splice(i, 1);
+                bullet.destroy();
+            }
+        }
+    }
+    
+    checkDoorCollision(door) {
+        const doorBounds = door.getBounds();
+        const playerBounds = this.sprite.getBounds();
+    
+        if (playerBounds.x + playerBounds.width > doorBounds.x && playerBounds.x < doorBounds.x + doorBounds.width &&
+            playerBounds.y + playerBounds.height > doorBounds.y && playerBounds.y < doorBounds.y + doorBounds.height) {
+            console.log("Player is touching the door");
+        }
+    }
+
     update(targetCircle) {
         if (this.keys.up) this.sprite.y -= this.speed;
         if (this.keys.down) this.sprite.y += this.speed;
