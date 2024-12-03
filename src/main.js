@@ -10,8 +10,8 @@ import { TrainingDummy } from './TrainingDummy.js'; // Import the new class
 
     await app.init({
         view: Monitor,
-        width: 1000,
-        height: 500,
+        width: 720,
+        height: 720,
         antialias: true,
         backgroundColor: 0x1099bb,
     });

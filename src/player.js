@@ -5,7 +5,7 @@ export class Player {
         this.app = app;
         this.sprite = new Sprite(playerTexture);
         this.sprite.anchor.set(0.5);
-        this.sprite.x = app.screen.width - 850;
+        this.sprite.x = app.screen.width  / 2;
         this.sprite.y = app.screen.height / 2;
 
         this.speed = 5;
@@ -75,7 +75,7 @@ export class Player {
         for (let i = 0; i < numberOfBullets; i++) {
             setTimeout(() => {
                 const bullet = new Graphics();
-                bullet.beginFill(0xff0000);
+                bullet.beginFill(0xfff200);
                 bullet.drawRect(-2, -5, 4, 10);
                 bullet.endFill();
 
@@ -112,59 +112,79 @@ export class Player {
     }
 
     initReloadAnimation() {
-        const spinRadius = 50; // Larger radius for a noticeable spin
+        const shellSpacing = 15; // Space between shells
+        const yOffset = 40; // Position below the player
+        
+        for (let i = 0; i < 4; i++) {
+            const shell = new Graphics();
     
-        for (let i = 0; i < 3; i++) {
-            const arrow = new Graphics();
-            arrow.beginFill(0xffffff);
-            arrow.drawPolygon([0, 0, 10, 5, 10, -5]);
-            arrow.endFill();
+            // Draw shell body (orange)
+            shell.beginFill(0xff4500);
+            shell.drawRect(-3, -5, 6, 10);
+            shell.endFill();
     
-            // Set initial positions; will be updated in the animation loop
-            arrow.x = 0;
-            arrow.y = 0;
+            // Draw shell cap (brass/yellow)
+            shell.beginFill(0xffd700);
+            shell.drawRect(-3, 5, 6, 5);
+            shell.endFill();
     
-            this.reloadArrows.push(arrow);
-            this.reloadAnimationContainer.addChild(arrow);
+            shell.x = i * shellSpacing - (1.5 * shellSpacing); // Center shells horizontally
+            shell.y = yOffset;
+            shell.visible = false;
+    
+            this.reloadArrows.push(shell); // Repurposing the reloadArrows array for shells
+            this.reloadAnimationContainer.addChild(shell);
         }
     
         this.reloadAnimationContainer.visible = false;
         this.sprite.addChild(this.reloadAnimationContainer); // Attach animation to player
     }
     
+    
+    
     startReloadAnimation() {
         this.reloadAnimationContainer.visible = true;
-        let angle = 0;
-        const spinRadius = 50; // Larger spin radius
-        const spinSpeed = 0.02; // Slower spin speed
     
-        this.reloadTicker = this.app.ticker.add(() => {
-            angle += spinSpeed; // Slow the rotation
-            this.reloadArrows.forEach((arrow, index) => {
-                const offsetAngle = angle + ((index * Math.PI * 2) / 3); // Space arrows evenly
-                arrow.x = Math.cos(offsetAngle) * spinRadius;
-                arrow.y = Math.sin(offsetAngle) * spinRadius;
-            });
+        const reloadTime = 2000; // Total reload time in ms
+        const segmentTime = reloadTime / 4; // Time for each shell to show
+        let currentShell = 0;
     
-            // Ensure the animation stays centered on the player
-            this.reloadAnimationContainer.x = 0;
-            this.reloadAnimationContainer.y = 0;
-        });
+        const showShell = () => {
+            if (currentShell < this.reloadArrows.length) {
+                this.reloadArrows[currentShell].visible = true;
+                currentShell++;
+            }
+    
+            if (currentShell === this.reloadArrows.length) {
+                setTimeout(() => {
+                    this.completeReloadAnimation(); // Trigger completion once the last shell shows
+                }, 100); // Brief delay to make the last shell’s green state visible
+            }
+        };
+    
+        this.reloadInterval = setInterval(showShell, segmentTime);
     }
+    
+    
+    
     
     completeReloadAnimation() {
-        this.app.ticker.remove(this.reloadTicker);
-        this.reloadArrows.forEach((arrow) => {
-            arrow.tint = 0x00ff00; // Turn arrows green to indicate completion
+        clearInterval(this.reloadInterval);
+        
+        // Turn all shells green
+        this.reloadArrows.forEach((shell) => {
+            shell.tint = 0x00ff00; // Apply green tint
         });
     
+        // Keep the shells visible for a noticeable period after turning green
         setTimeout(() => {
+            this.reloadArrows.forEach((shell) => {
+                shell.visible = false; // Hide the shells after a brief delay
+                shell.tint = 0xffffff; // Reset the tint for next reload
+            });
             this.reloadAnimationContainer.visible = false;
-            this.reloadArrows.forEach((arrow) => (arrow.tint = 0xffffff)); // Reset color
-        }, 500);
+        }, 1000); // Keep shells visible for 1 second after reload
     }
-    
-    
 
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
