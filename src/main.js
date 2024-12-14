@@ -4,7 +4,6 @@ import { TrainingDummy } from './TrainingDummy.js';
 import { MapManager } from './mapManager.js';
 
 (async () => {
-    
     // Create PIXI application
     const Monitor = document.getElementById('myCanvas');
     const app = new Application();
@@ -16,9 +15,7 @@ import { MapManager } from './mapManager.js';
         antialias: true,
         backgroundColor: 0x1099bb,
     });
-
-    const mapManager = new MapManager(app, Player);
-
+    
     // Create and configure a target circle for aiming
     const targetCircle = new Graphics();
     targetCircle.beginFill(0xffffff);
@@ -63,7 +60,6 @@ import { MapManager } from './mapManager.js';
         'src/Sprites/Training Dummy/TrainingDummy_Death_5.png',
         'src/Sprites/Training Dummy/TrainingDummy_Death_6.png',
         'src/Sprites/Training Dummy/TrainingDummy_Death_7.png',
-
     ];
 
     // Preload all assets
@@ -80,31 +76,21 @@ import { MapManager } from './mapManager.js';
 
     // Create the enemy instance
     const enemy = new TrainingDummy(app, TrainingDummyIdle, TrainingDummyShot, TrainingDummyDepleted);
+    app.stage.addChild(enemy.idleSprite);
 
-    // Create door object (this is for the transition between rooms)
-    const door = new Graphics();
-    door.beginFill(0xff0000);  // Red color for the door
-    door.drawRect(0, 0, 50, 50); // Door size (width x height)
-    door.endFill();
-    door.x = 650;  // Position on the canvas
-    door.y = 650;
-    app.stage.addChild(door);
+    // Initialize MapManager (pass app and player as parameters)
+    const mapManager = new MapManager(app, player);
+    mapManager.enemy = enemy; // Pass the enemy reference to MapManager for proper updates
 
-    door.interactive = true;
-    door.buttonMode = true;
-
-    // Handle the transition when the player walks through the door
-    door.on('pointerdown', () => {
-        console.log("Player entered the door, transitioning to next room...");
-
-        // Transition to the next room
-        mapManager.loadNextRoom();  // Assuming MapManager handles room transitions
-        player.sprite.x = 50; // Move player to the entrance of the new room (near the door)
-        player.sprite.y = 50;
-    });
+    // Ensure the room and player are added correctly in Z-index order
+    app.stage.addChild(mapManager.roomContainer); // Map layer
+    app.stage.addChild(player.sprite);           // Player on top
+    app.stage.addChild(enemy.idleSprite);        // Enemy on top
+    app.stage.addChild(targetCircle);            // UI element on top
 
     // Main game loop
     app.ticker.add(() => {
+        mapManager.update();
         player.update(targetCircle); // Update player
 
         // Check if any bullets collide with the enemy
