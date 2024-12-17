@@ -1,9 +1,11 @@
-import { Container, Graphics, Text, Ticker } from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
+import * as PIXI from 'pixi.js';
 
 export class MapManager {
-    constructor(app, player) {
+    constructor(app, player, textureManager) {
         this.app = app;
         this.player = player; // Reference to the player
+        this.textureManager = textureManager; // Reference to the texture manager
         this.rooms = [];
         this.currentRoom = null;
         this.roomSize = { width: 720, height: 720 }; // Fixed room size
@@ -169,14 +171,13 @@ export class MapManager {
         }
 
         if (!this.currentRoom.connections) {
-            console.error("Current room connections are not defined");
+            console.error("Current room has no connections");
             return;
         }
 
         const targetRoom = this.currentRoom.connections[direction];
         if (!targetRoom) {
-            console.log(`No room connected in the direction: ${direction}`);
-            console.log("Available connections:", this.currentRoom.connections);
+            console.error(`No room in the ${direction} direction`);
             return;
         }
 
@@ -195,47 +196,53 @@ export class MapManager {
     }
 
     loadCurrentRoom(room, fromDirection = null) {
-        this.currentRoom = room;
-        this.roomContainer.removeChildren();
+    this.currentRoom = room;
+    this.roomContainer.removeChildren();
 
-        // Draw the current room
-        const roomGraphic = new Graphics();
-        roomGraphic.beginFill(0x333333);
-        roomGraphic.drawRect(0, 0, this.roomSize.width, this.roomSize.height); // Fixed size
-        roomGraphic.endFill();
+    // Draw the current room with textures
+    const floorTextures = {
+        1: 'DestroyedGreenTallGrass',
+        2: 'DestroyedDarkGreenTallGrass',
+        3: 'DestroyedGoldTallGrass',
+        4: 'DestroyedCrimsonTallGrass'
+    };
+    const textureName = floorTextures[this.currentFloor];
+    const texture = this.textureManager.getTexture(textureName);
 
-        // Add room ID text
-        let roomTextContent = `Room ${room.id} Floor ${this.currentFloor}`;
-        if (room.isSpecial) {
-            roomTextContent += ` ${room.type.toUpperCase().replace('ROOM', '')}`;
-        }
-        const roomText = new Text(roomTextContent, {
-            fill: 'white',
-            fontSize: 24,
-        });
-        roomText.x = 10;
-        roomText.y = 10;
-        roomGraphic.addChild(roomText);
+    // Create a tiled sprite for the room background
+    const tiledSprite = new PIXI.TilingSprite(texture, this.roomSize.width, this.roomSize.height);
+    this.roomContainer.addChild(tiledSprite);
 
-        this.roomContainer.addChild(roomGraphic);
-
-        // Draw connections to adjacent rooms
-        this.drawRoomConnections();
-
-        // Position player near entrance if coming from another room
-        if (fromDirection) {
-            this.placePlayerNearEntrance(fromDirection);
-        }
-
-        // Ensure player is rendered on top of the map
-        this.app.stage.addChild(this.player.sprite);
-
-        // Set door cooldown to prevent immediate re-entry
-        this.doorCooldown = true;
-        setTimeout(() => {
-            this.doorCooldown = false;
-        }, 1000); // 1 second cooldown
+    // Add room ID text
+    let roomTextContent = `Room ${room.id} Floor ${this.currentFloor}`;
+    if (room.isSpecial) {
+        roomTextContent += ` ${room.type.toUpperCase().replace('ROOM', '')}`;
     }
+    const roomText = new Text(roomTextContent, {
+        fill: 'white',
+        fontSize: 24,
+    });
+    roomText.x = 10;
+    roomText.y = 10;
+    this.roomContainer.addChild(roomText);
+
+    // Draw connections to adjacent rooms
+    this.drawRoomConnections();
+
+    // Position player near entrance if coming from another room
+    if (fromDirection) {
+        this.placePlayerNearEntrance(fromDirection);
+    }
+
+    // Ensure player is rendered on top of the map
+    this.app.stage.addChild(this.player.sprite);
+
+    // Set door cooldown to prevent immediate re-entry
+    this.doorCooldown = true;
+    setTimeout(() => {
+        this.doorCooldown = false;
+    }, 1000); // 1 second cooldown
+}
 
     drawRoomConnections() {
         for (const direction in this.currentRoom.connections) {
@@ -420,8 +427,6 @@ export class MapManager {
                     width: doorHeight,
                     height: doorWidth,
                 };
-            default:
-                return null;
         }
     }
 
@@ -429,10 +434,10 @@ export class MapManager {
         const playerBounds = this.player.sprite.getBounds();
 
         return (
-            playerBounds.x < doorBounds.x + doorBounds.width &&
             playerBounds.x + playerBounds.width > doorBounds.x &&
-            playerBounds.y < doorBounds.y + doorBounds.height &&
-            playerBounds.y + playerBounds.height > doorBounds.y
+            playerBounds.x < doorBounds.x + doorBounds.width &&
+            playerBounds.y + playerBounds.height > doorBounds.y &&
+            playerBounds.y < doorBounds.y + doorBounds.height
         );
     }
 }

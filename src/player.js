@@ -1,24 +1,26 @@
 import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'pixi.js';
 
 export class Player {
-    constructor(app, playerTexture, gunTexture, rechamberAnimation) {
+    constructor(app, playerTexture, gunTexture, rechamberAnimation, textureManager) {
         this.app = app;
         this.sprite = new Sprite(playerTexture);
         this.sprite.anchor.set(0.5);
-        this.sprite.x = app.screen.width  / 2;
+        this.sprite.x = app.screen.width / 2;
         this.sprite.y = app.screen.height / 2;
-
+    
         this.speed = 5;
         this.hp = 3;
-
+    
         // Gun animation setup
-        this.gun = new AnimatedSprite(rechamberAnimation.map((frame) => Assets.get(frame)));
+        this.gun = new AnimatedSprite(rechamberAnimation);
         this.gun.anchor.set(0.5);
         this.gun.animationSpeed = 0.1;
         this.gun.loop = false;
         this.gun.texture = gunTexture;
         this.sprite.addChild(this.gun);
-
+    
+        this.rechamberAnimation = rechamberAnimation; // Store the animation frames
+    
         this.bullets = [];
         this.currentShells = 4;
         this.MAX_SHELLS = 4;
@@ -26,13 +28,13 @@ export class Player {
         this.shotCooldown = 500;
         this.lastShotTime = 0;
         this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
-
+    
         // Reload animation
         this.reloadAnimationContainer = new Container();
         this.reloadArrows = [];
         this.initReloadAnimation();
         this.sprite.addChild(this.reloadAnimationContainer);
-
+    
         this.setupControls();
     }
 
@@ -67,34 +69,35 @@ export class Player {
 
     shootShotgun() {
         if (this.currentShells <= 0 || this.isReloading) return;
-
+    
         const spreadAngle = 0.261799; // ~15 degrees
         const numberOfBullets = 5;
         const shotDelay = 10;
-
+    
         for (let i = 0; i < numberOfBullets; i++) {
             setTimeout(() => {
                 const bullet = new Graphics();
                 bullet.beginFill(0xfff200);
                 bullet.drawRect(-2, -5, 4, 10);
                 bullet.endFill();
-
+    
                 const offsetX = Math.cos(this.gun.rotation) * 30;
                 const offsetY = Math.sin(this.gun.rotation) * 30;
-
+    
                 bullet.x = this.sprite.x + this.gun.x + offsetX;
                 bullet.y = this.sprite.y + this.gun.y + offsetY;
-
+    
                 const randomAngle = this.gun.rotation + (Math.random() - 0.5) * spreadAngle;
                 bullet.vx = Math.cos(randomAngle) * 5;
                 bullet.vy = Math.sin(randomAngle) * 5;
-
+    
                 this.app.stage.addChild(bullet);
                 this.bullets.push(bullet);
             }, i * shotDelay);
         }
-
+    
         this.currentShells--;
+        this.gun.textures = this.rechamberAnimation; // Ensure the textures are set for the animation
         this.gun.gotoAndPlay(0); // Play firing animation
     }
 

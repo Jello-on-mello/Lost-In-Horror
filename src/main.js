@@ -1,9 +1,11 @@
-import { Application, Graphics, Assets } from 'pixi.js';
+import { Application, Assets } from 'pixi.js';
 import { Player } from './player.js';
 import { MapManager } from './mapManager.js';
+import { TextureManager } from './textureManager.js';
+import { createCrosshair } from './crosshair.js';
 
 (async () => {
-    // Create PIXI application
+    // Ensure the canvas element exists
     const Monitor = document.getElementById('myCanvas');
     const app = new Application();
 
@@ -14,53 +16,50 @@ import { MapManager } from './mapManager.js';
         antialias: true,
         backgroundColor: 0x1099bb,
     });
-    
-    // Create and configure a target circle for aiming
-    const targetCircle = new Graphics();
-    targetCircle.beginFill(0xffffff);
-    targetCircle.drawCircle(0, 0, 8);
-    targetCircle.endFill();
-    targetCircle.lineStyle(1, 0x111111, 0.87);
-    app.stage.addChild(targetCircle);
+
+    // Create and configure the crosshair
+    const crosshair = createCrosshair();
+    app.stage.addChild(crosshair);
 
     // Enable interactivity and set hit area to the entire screen
     app.stage.interactive = true;
     app.stage.hitArea = app.screen;
 
-    // Update target position to follow the mouse
+    // Update crosshair position to follow the mouse
     app.stage.on('pointermove', (e) => {
-        targetCircle.position.copyFrom(e.global);
+        crosshair.position.copyFrom(e.global);
     });
 
-    // Load assets for player gun and animations
+    // Initialize TextureManager and load textures
+    const textureManager = new TextureManager('src/Sprites/Grass/GRASS+_ Spritesheet.png');
+    await textureManager.loadTextures();
+
+    // Retrieve textures from TextureManager
+    const GunTexture = textureManager.getTexture('GunTexture');
+    const playerTexture = textureManager.getTexture('PlayerTexture');
     const RechamberAnimation = [
-        '/src/Sprites/TOZ-106/TOZ-106_Fired_4.png',
-        '/src/Sprites/TOZ-106/TOZ-106_Fired_1.png',
-        '/src/Sprites/TOZ-106/TOZ-106_Fired_2.png',
-        '/src/Sprites/TOZ-106/TOZ-106_Fired_3.png',
-        '/src/Sprites/TOZ-106/TOZ-106_Fired_4.png'
+        textureManager.getTexture('RechamberAnimation0'),
+        textureManager.getTexture('RechamberAnimation1'),
+        textureManager.getTexture('RechamberAnimation2'),
+        textureManager.getTexture('RechamberAnimation3'),
+        textureManager.getTexture('RechamberAnimation4')
     ];
 
-    // Preload all assets
-    await Assets.load(RechamberAnimation);
-    const GunTexture = await Assets.load('/src/Sprites/TOZ-106/TOZ-106.png');
-    const playerTexture = await Assets.load('https://pixijs.io/examples/examples/assets/bunny.png');
-
     // Create player instance
-    const player = new Player(app, playerTexture, GunTexture, RechamberAnimation);
+    const player = new Player(app, playerTexture, GunTexture, RechamberAnimation, textureManager);
     app.stage.addChild(player.sprite);
 
-    // Initialize MapManager (pass app and player as parameters)
-    const mapManager = new MapManager(app, player);
+    // Initialize MapManager (pass app, player, and textureManager as parameters)
+    const mapManager = new MapManager(app, player, textureManager);
 
     // Ensure the room and player are added correctly in Z-index order
     app.stage.addChild(mapManager.roomContainer); // Map layer
     app.stage.addChild(player.sprite);           // Player on top
-    app.stage.addChild(targetCircle);            // UI element on top
+    app.stage.addChild(crosshair);               // UI element on top
 
     // Main game loop
     app.ticker.add(() => {
         mapManager.update();
-        player.update(targetCircle);
+        player.update(crosshair);
     });
 })();
