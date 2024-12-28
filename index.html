@@ -4,44 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lost In Horror</title>
+    <link rel="icon" type="image/x-icon" href="/src/Sprites/LostInHorror/Icon.png">
     <style>
-         body {
+        body {
             margin: 0;
+            height: 100vh; /* Full viewport height */
+            background-color:rgba(191,215 ,147.1); /* Dark blue background color */
+            color: #ffffff; /* White text for contrast */
+            font-family: Arial, sans-serif; /* Clean font */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Full viewport height */
-            background-color: #121212; /* Dark background for horror theme */
-            color: #ffffff; /* White text for contrast */
-            font-family: Arial, sans-serif; /* Clean font */
+            overflow: hidden; /* Prevent scrolling */
+            position: relative; /* Ensure child elements can be positioned absolutely */
+        }
+
+        .GameContainer {
+            position: absolute;
+            z-index: 1; /* Ensure it is behind the background image */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30vw; /* Full viewport width */
+            height: 80vh; /* Full viewport height */
+            background-color: rgba(191,215 ,147.1) ; /* Slightly darker shade of gray for the container with transparency */
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("/src/Sprites/LostInHorror/BackGround.png "); /* Add your background image here */
+            background-size: 105% 100%; /* Scale the background image to be more zoomed out */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Prevent the background image from repeating */
+            image-rendering: crisp-edges; /* Make the background image sharper */
+            z-index: 2; /* Ensure it is in front of the GameContainer */
         }
 
         .GameDiv {
             position: relative;
             border: 2px solid #ffffff; /* White border around the canvas */
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); /* Subtle shadow for depth */
+            box-shadow: 0 0 30px rgba(0, 100, 0, 0.7); /* Dark green thick shadow for depth */
             overflow: hidden; /* Prevent overflow */
-        }
-
-        canvas {
-            display: block; /* Remove default inline spacing */
-            width: 100%; /* Make canvas responsive */
-            height: auto; /* Maintain aspect ratio */
+            width: 720px; /* Width of the canvas container */
+            height: 720px; /* Height of the canvas container */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: -50px; /* Bring the canvas closer to the logo */
         }
 
         h1 {
-            position: absolute;
-            top: 20px;
-            left: 20px;
             font-size: 2em; /* Larger font for title */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for text */
+            margin-bottom: -30px; /* Reduce space below the title */
+            position: relative; /* Make the logo position relative */
+            z-index: 3; /* Ensure it is above other elements */
+            top: -20px; /* Move the logo down */
+        }
+
+        .description {
+            margin-top: 20px; /* Space above the description */
+            font-size: 1.2em; /* Font size for description */
+            text-align: center; /* Center align the description */
         }
     </style>
 </head>
 <body>
-    <div class="GameDiv">
-        <canvas id="myCanvas"></canvas>
-    </div>  
-  <script type="module" src="/src/main.js"></script>
-</body> 
+    <div class="GameContainer">
+        <h1><img src="/src/Sprites/LostInHorror/Logo.png" alt="𝓛𝓸𝓼𝓽 𝓘𝓷 𝓗𝓸𝓻𝓻𝓸𝓻" width="400" height="300"></h1>
+        <div class="GameDiv">
+            <canvas id="myCanvas" width="720" height="720"></canvas>
+        </div>
+        <div class="description">This is the game description.</div>
+    </div>
+    <div class="background-image"></div>
+    <script type="module" src="/src/main.js"></script>
+</body>
 </html>
