@@ -8,8 +8,9 @@
     <style>
         body {
             margin: 0;
-            height: 100vh; /* Full viewport height */
-            background-color:rgba(191,215 ,147.1); /* Dark blue background color */
+            width: 125vw; /* Compensate for the 80% scale */
+            height: 125vh; /* Compensate for the 80% scale */
+            background-color: #A9BB8D; /* Dark blue background color */
             color: #ffffff; /* White text for contrast */
             font-family: Arial, sans-serif; /* Clean font */
             display: flex;
@@ -17,6 +18,8 @@
             align-items: center;
             overflow: hidden; /* Prevent scrolling */
             position: relative; /* Ensure child elements can be positioned absolutely */
+            transform: scale(0.8); /* Scale down to 80% */
+            transform-origin: top left; /* Scale from the top left corner */
         }
 
         .GameContainer {
@@ -27,7 +30,8 @@
             align-items: center;
             width: 30vw; /* Full viewport width */
             height: 80vh; /* Full viewport height */
-            background-color: rgba(191,215 ,147.1) ; /* Slightly darker shade of gray for the container with transparency */
+            background-color: #A9BB8D ; /* Slightly darker shade of gray for the container with transparency */
+            top: 150px; /* Move the container slightly down*/
         }
 
         .background-image {
