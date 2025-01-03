@@ -31,7 +31,7 @@ import { createCrosshair } from './crosshair.js';
     });
 
     // Initialize TextureManager and load textures
-    const textureManager = new TextureManager('src/Sprites/Grass/GRASS+_ Spritesheet.png');
+    const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_ Spritesheet.png');
     await textureManager.loadTextures();
 
     // Retrieve textures from TextureManager
