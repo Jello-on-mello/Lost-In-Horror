@@ -8,28 +8,28 @@
     <style>
         body {
             margin: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #A9BB8D;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
+            width: 100vw; /* Compensate for the 80% scale */
+            height: 110vh; /* Compensate for the 80% scale */
+            background-color: #A9BB8D; /* Dark blue background color */
+            color: #ffffff; /* White text for contrast */
+            font-family: Arial, sans-serif; /* Clean font */
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            position: relative;
+            overflow: hidden; /* Prevent scrolling */
+            position: relative; /* Ensure child elements can be positioned absolutely */
         }
 
         .GameContainer {
             position: absolute;
-            z-index: 1;
+            z-index: 1; /* Ensure it is behind the background image */
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 30vw;
-            height: 80vh;
-            background-color: #A9BB8D;
-            top: 150px;
+            width: 30vw; /* Full viewport width */
+            height: 80vh; /* Full viewport height */
+            background-color: #A9BB8D ; /* Slightly darker shade of gray for the container with transparency */
+            top: 150px; /* Move the container slightly down*/
         }
 
         .background-image {
@@ -38,54 +38,48 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url("./src/Sprites/LostInHorror/BackGround.png");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            image-rendering: crisp-edges;
-            z-index: 0; 
+            background-image: url("./src/Sprites/LostInHorror/BackGround.png "); /* Add your background image here */
+            background-size: 105% 100%; /* Scale the background image to be more zoomed out */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Prevent the background image from repeating */
+            image-rendering: crisp-edges; /* Make the background image sharper */
+            z-index: 2; /* Ensure it is in front of the GameContainer */
         }
 
         .GameDiv {
             position: relative;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 30px rgba(0, 100, 0, 0.7);
-            overflow: hidden;
-            width: 720px;
-            height: 720px;
+            border: 2px solid #ffffff; /* White border around the canvas */
+            box-shadow: 0 0 30px rgba(0, 100, 0, 0.7); /* Dark green thick shadow for depth */
+            overflow: hidden; /* Prevent overflow */
+            width: 720px; /* Width of the canvas container */
+            height: 720px; /* Height of the canvas container */
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: -50px;
+            margin-top: -50px; /* Bring the canvas closer to the logo */
         }
 
         h1 {
-            font-size: 2em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-            margin-bottom: -30px;
-            position: relative;
-            z-index: 3;
-            top: -70px;
-            width: 720px;
-        }
-
-        h1 img {
-            width: 100%;
-            height: auto;
+            font-size: 2em; /* Larger font for title */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for text */
+            margin-bottom: -30px; /* Reduce space below the title */
+            position: relative; /* Make the logo position relative */
+            z-index: 3; /* Ensure it is above other elements */
+            top: -20px; /* Move the logo down */
         }
 
         .description {
-            margin-top: 20px;
-            font-size: 1.2em;
-            text-align: center;
+            margin-top: 20px; /* Space above the description */
+            font-size: 1.2em; /* Font size for description */
+            text-align: center; /* Center align the description */
         }
     </style>
 </head>
 <body>
     <div class="GameContainer">
-        <h1><img src="./src/Sprites/LostInHorror/Logo.png" alt="𝓛𝓸𝓼𝓽 𝓘𝓷 𝓗𝓸𝓻𝓻𝓸𝓻"></h1>
+        <h1><img src="./src/Sprites/LostInHorror/Logo.png" alt="𝓛𝓸𝓼𝓽 𝓘𝓷 𝓗𝓸𝓻𝓻𝓸𝓻" width="400" height="300"></h1>
         <div class="GameDiv">
-            <canvas id="myCanvas"></canvas>
+            <canvas id="myCanvas" width="720" height="720"></canvas>
         </div>
         <div class="description">This is the game description.</div>
     </div>
