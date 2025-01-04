@@ -199,6 +199,9 @@ export class MapManager {
     this.currentRoom = room;
     this.roomContainer.removeChildren();
 
+         // Despawn all bullets
+         this.player.despawnBullets();
+
     // Draw the current room with textures
     const floorTextures = {
         1: 'DestroyedGreenTallGrass',

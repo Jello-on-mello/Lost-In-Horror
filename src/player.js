@@ -1,4 +1,5 @@
 import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'pixi.js';
+import { Bullet } from './bullet.js';
 
 export class Player {
     constructor(app, playerTexture, gunTexture, rechamberAnimation, textureManager) {
@@ -69,33 +70,21 @@ export class Player {
 
     shootShotgun() {
         if (this.currentShells <= 0 || this.isReloading) return;
-    
+
         const spreadAngle = 0.261799; // ~15 degrees
         const numberOfBullets = 5;
         const shotDelay = 10;
-    
+
         for (let i = 0; i < numberOfBullets; i++) {
             setTimeout(() => {
-                const bullet = new Graphics();
-                bullet.beginFill(0xfff200);
-                bullet.drawRect(-2, -5, 4, 10);
-                bullet.endFill();
-    
-                const offsetX = Math.cos(this.gun.rotation) * 30;
-                const offsetY = Math.sin(this.gun.rotation) * 30;
-    
-                bullet.x = this.sprite.x + this.gun.x + offsetX;
-                bullet.y = this.sprite.y + this.gun.y + offsetY;
-    
-                const randomAngle = this.gun.rotation + (Math.random() - 0.5) * spreadAngle;
-                bullet.vx = Math.cos(randomAngle) * 5;
-                bullet.vy = Math.sin(randomAngle) * 5;
-    
-                this.app.stage.addChild(bullet);
+                const direction = this.gun.rotation + (Math.random() - 0.5) * spreadAngle;
+                const spawnPoint = { x: this.sprite.x + this.gun.x, y: this.sprite.y + this.gun.y };
+                const bullet = new Bullet('player', direction, 5, spawnPoint, 1);
+                bullet.bullets.forEach(b => this.app.stage.addChild(b));
                 this.bullets.push(bullet);
             }, i * shotDelay);
         }
-    
+
         this.currentShells--;
         this.gun.textures = this.rechamberAnimation; // Ensure the textures are set for the animation
         this.gun.gotoAndPlay(0); // Play firing animation
@@ -143,8 +132,6 @@ export class Player {
         this.sprite.addChild(this.reloadAnimationContainer); // Attach animation to player
     }
     
-    
-    
     startReloadAnimation() {
         this.reloadAnimationContainer.visible = true;
     
@@ -167,9 +154,6 @@ export class Player {
     
         this.reloadInterval = setInterval(showShell, segmentTime);
     }
-    
-    
-    
     
     completeReloadAnimation() {
         clearInterval(this.reloadInterval);
@@ -195,52 +179,6 @@ export class Player {
         this.gun.rotation = Math.atan2(dy, dx);
     }
 
-    update(targetCircle, door) {
-        // Player movement controls
-        if (this.keys.up) this.sprite.y -= this.speed;
-        if (this.keys.down) this.sprite.y += this.speed;
-        if (this.keys.left) this.sprite.x -= this.speed;
-        if (this.keys.right) this.sprite.x += this.speed;
-    
-        this.sprite.x = Math.max(0, Math.min(this.sprite.x, this.app.screen.width));
-        this.sprite.y = Math.max(0, Math.min(this.sprite.y, this.app.screen.height));
-    
-        // Check if the player is touching the door
-        this.checkDoorCollision(door);
-    
-        if (this.keys.shoot && Date.now() - this.lastShotTime >= this.shotCooldown) {
-            this.shootShotgun();
-            this.lastShotTime = Date.now();
-        }
-    
-        if (this.keys.reload) {
-            this.reload();
-        }
-    
-        this.updateGunRotation(targetCircle);
-    
-        for (let i = this.bullets.length - 1; i >= 0; i--) {
-            const bullet = this.bullets[i];
-            bullet.x += bullet.vx;
-            bullet.y += bullet.vy;
-    
-            if (bullet.x < 0 || bullet.x > this.app.screen.width || bullet.y < 0 || bullet.y > this.app.screen.height) {
-                this.bullets.splice(i, 1);
-                bullet.destroy();
-            }
-        }
-    }
-    
-    checkDoorCollision(door) {
-        const doorBounds = door.getBounds();
-        const playerBounds = this.sprite.getBounds();
-    
-        if (playerBounds.x + playerBounds.width > doorBounds.x && playerBounds.x < doorBounds.x + doorBounds.width &&
-            playerBounds.y + playerBounds.height > doorBounds.y && playerBounds.y < doorBounds.y + doorBounds.height) {
-            console.log("Player is touching the door");
-        }
-    }
-
     update(targetCircle) {
         if (this.keys.up) this.sprite.y -= this.speed;
         if (this.keys.down) this.sprite.y += this.speed;
@@ -261,15 +199,24 @@ export class Player {
 
         this.updateGunRotation(targetCircle);
 
+        this.bullets.forEach(bullet => bullet.update());
+
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const bullet = this.bullets[i];
-            bullet.x += bullet.vx;
-            bullet.y += bullet.vy;
-
-            if (bullet.x < 0 || bullet.x > this.app.screen.width || bullet.y < 0 || bullet.y > this.app.screen.height) {
+            bullet.bullets.forEach(b => {
+                if (b.x < 0 || b.x > this.app.screen.width || b.y < 0 || b.y > this.app.screen.height) {
+                    b.destroy();
+                    bullet.bullets.splice(bullet.bullets.indexOf(b), 1);
+                }
+            });
+            if (bullet.bullets.length === 0) {
                 this.bullets.splice(i, 1);
-                bullet.destroy();
             }
         }
+    }
+
+    despawnBullets() {
+        this.bullets.forEach(bullet => bullet.despawn());
+        this.bullets = [];
     }
 }
