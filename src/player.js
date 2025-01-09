@@ -5,6 +5,7 @@ export class Player {
     constructor(app, playerTexture, gunTexture, rechamberAnimation, textureManager) {
         this.app = app;
         this.sprite = new Sprite(playerTexture);
+        this.sprite.scale.set(1.5, 1.5);
         this.sprite.anchor.set(0.5);
         this.sprite.x = app.screen.width / 2;
         this.sprite.y = app.screen.height / 2;

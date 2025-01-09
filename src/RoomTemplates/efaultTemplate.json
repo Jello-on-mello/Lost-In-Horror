@@ -1,0 +1,531 @@
+{
+  "rooms": [
+      {
+          "id": " example room_1",
+          "floor": 1,
+          "type": "default",
+          "grid": [
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ],
+              [
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  },
+                  {
+                      "tile": "tile055",
+                      "decoration": "none",
+                      "enemy_spawn": false
+                  }
+              ]
+          ]
+      }
+  ]
+}

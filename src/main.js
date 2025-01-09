@@ -11,8 +11,8 @@ import { createCrosshair } from './crosshair.js';
 
     await app.init({
         view: Monitor,
-        width: 720,
-        height: 720,
+        width: 750,
+        height: 750,
         antialias: true,
         backgroundColor: 0x1099bb,
     });
@@ -31,7 +31,7 @@ import { createCrosshair } from './crosshair.js';
     });
 
     // Initialize TextureManager and load textures
-    const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_ Spritesheet.png');
+    const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_Spritesheet.png');
     await textureManager.loadTextures();
 
     // Retrieve textures from TextureManager
@@ -45,12 +45,39 @@ import { createCrosshair } from './crosshair.js';
         textureManager.getTexture('RechamberAnimation4')
     ];
 
+    // Load room templates
+    const roomTemplates = {
+        default: await fetch('./src/RoomTemplates/DefaultTemplate.json')
+            .then((res) => res.json())
+            .catch((err) => console.error('Failed to load DefaultTemplate.json:', err)),
+        spawn: await fetch('./src/RoomTemplates/SpawnTemplate.json')
+            .then((res) => res.json())
+            .catch((err) => console.error('Failed to load SpawnTemplate.json:', err)),
+        shop: await fetch('./src/RoomTemplates/ShopTemplate.json')
+            .then((res) => res.json())
+            .catch((err) => console.error('Failed to load ShopTemplate.json:', err)),
+        boss: await fetch('./src/RoomTemplates/BossTemplate.json')
+            .then((res) => res.json())
+            .catch((err) => console.error('Failed to load BossTemplate.json:', err))
+    };
+    
+
+    const mergedRoomTemplates = {
+        rooms: [
+            ...(roomTemplates.default?.rooms || []),
+            ...(roomTemplates.spawn?.rooms || []),
+            ...(roomTemplates.shop?.rooms || []),
+            ...(roomTemplates.boss?.rooms || [])
+        ]
+    };
+    
+
     // Create player instance
     const player = new Player(app, playerTexture, GunTexture, RechamberAnimation, textureManager);
     app.stage.addChild(player.sprite);
 
-    // Initialize MapManager (pass app, player, and textureManager as parameters)
-    const mapManager = new MapManager(app, player, textureManager);
+    // Initialize MapManager with templates
+    const mapManager = new MapManager(app, player, textureManager, mergedRoomTemplates);
 
     // Ensure the room and player are added correctly in Z-index order
     app.stage.addChild(mapManager.roomContainer); // Map layer

@@ -1,14 +1,16 @@
 import { Container, Graphics, Text, TilingSprite } from 'pixi.js';
 
 export class MapManager {
-    constructor(app, player, textureManager) {
+    constructor(app, player, textureManager, roomTemplates) {
         this.app = app;
         this.player = player;
         this.textureManager = textureManager;
         this.rooms = [];
         this.currentRoom = null;
-        this.roomSize = { width: 720, height: 720 };
+        this.roomSize = { width: 750, height: 750 };
         this.roomContainer = new Container();
+        this.roomTemplates = roomTemplates; // Room templates passed during initialization
+        this.usedRoomIds = new Set(); // Track unique room IDs used
         this.doorCooldown = false;
         this.spawnRoom = null;
         this.shopRoom = null;
@@ -34,6 +36,7 @@ export class MapManager {
         const roomData = {};
 
         const generateRoom = (id, x, y) => {
+            const template = this.getRoomTemplate(id);
             return {
                 id,
                 x,
@@ -41,11 +44,12 @@ export class MapManager {
                 connections: { north: null, south: null, east: null, west: null },
                 visited: false,
                 isSpecial: false,
-                type: null,
+                type: template.type || "default",
+                grid: template.grid
             };
         };
 
-        roomData[0] = generateRoom(0, 0, 0);
+        roomData[0] = this.generateSpecialRoom(0, 0, 0, 'spawnRoom');
 
         let currentId = 1;
         let frontier = [roomData[0]];
@@ -88,7 +92,6 @@ export class MapManager {
 
         this.rooms = Object.values(roomData);
 
-        this.addSpecialRoom('spawnRoom');
         this.addSpecialRoom('shopRoom');
         this.addSpecialRoom('bossRoom');
 
@@ -157,58 +160,77 @@ export class MapManager {
         });
     }
 
-    moveToRoom(direction) {
-        if (!this.currentRoom) {
-            console.error("Current room is not defined");
-            return;
+    getRoomTemplate(id) {
+        const availableRooms = this.roomTemplates.rooms.filter(
+            room => room.floor === this.currentFloor && !this.usedRoomIds.has(room.id)
+        );
+
+        if (availableRooms.length === 0) {
+            // If no unique room available, return a default room structure
+            return {
+                id: `fallback_room_${id}`,
+                type: "default",
+                grid: Array.from({ length: 10 }, () =>
+                    Array.from({ length: 10 }, () => ({
+                        tile: "tile055",
+                        decoration: "none",
+                        enemy_spawn: false
+                    }))
+                )
+            };
         }
 
-        if (!this.currentRoom.connections) {
-            console.error("Current room has no connections");
-            return;
-        }
-
-        const targetRoom = this.currentRoom.connections[direction];
-        if (!targetRoom) {
-            console.error(`No room in the ${direction} direction`);
-            return;
-        }
-
-        this.loadCurrentRoom(targetRoom, direction);
+        const selectedRoom = availableRooms[Math.floor(Math.random() * availableRooms.length)];
+        this.usedRoomIds.add(selectedRoom.id);
+        return selectedRoom;
     }
 
-    getOppositeDirection(direction) {
-        const opposites = {
-            north: 'south',
-            south: 'north',
-            east: 'west',
-            west: 'east',
+    generateSpecialRoom(id, x, y, type) {
+        return {
+            id,
+            x,
+            y,
+            connections: { north: null, south: null, east: null, west: null },
+            visited: false,
+            isSpecial: true,
+            type,
+            grid: Array.from({ length: 10 }, () =>
+                Array.from({ length: 10 }, () => ({
+                    tile: "tile055",
+                    decoration: "none",
+                    enemy_spawn: false
+                }))
+            )
         };
-        return opposites[direction];
     }
 
     loadCurrentRoom(room, fromDirection = null) {
         this.currentRoom = room;
         this.roomContainer.removeChildren();
-    
+
         this.player.despawnBullets();
-    
-        const roomShape = this.getRoomShape(room);
-    
-        const texture = this.textureManager.getTexture(roomShape);
-        const tiledSprite = new TilingSprite(texture, this.roomSize.width, this.roomSize.height);
+
+        const tiledSprite = new TilingSprite(
+            this.textureManager.getTexture("tile055"),
+            this.roomSize.width,
+            this.roomSize.height
+        );
         this.roomContainer.addChild(tiledSprite);
-    
-        console.log(`Room ${room.id} Floor ${this.currentFloor} ${room.isSpecial ? room.type.toUpperCase().replace('ROOM', '') : ''} Shape: ${roomShape}`);
-    
+
+        console.log(
+            `Room ID: ${room.id}, Floor: ${this.currentFloor}, Type: ${room.type.toUpperCase()}, Shape: ${
+                this.getRoomShape(room)
+            }`
+        );
+
         this.drawRoomConnections();
-    
+
         if (fromDirection) {
             this.placePlayerNearEntrance(fromDirection);
         }
-    
+
         this.app.stage.addChild(this.player.sprite);
-    
+
         this.doorCooldown = true;
         setTimeout(() => {
             this.doorCooldown = false;
@@ -410,6 +432,16 @@ export class MapManager {
                     height: doorWidth,
                 };
         }
+    }
+
+    getOppositeDirection(direction) {
+        const opposites = {
+            north: 'south',
+            south: 'north',
+            east: 'west',
+            west: 'east'
+        };
+        return opposites[direction];
     }
 
     isPlayerTouchingDoor(doorBounds) {
