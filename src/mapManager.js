@@ -8,7 +8,7 @@ export class MapManager {
         this.textureManager = textureManager; // Reference to the texture manager
         this.rooms = [];
         this.currentRoom = null;
-        this.roomSize = { width: 720, height: 720 }; // Fixed room size
+        this.roomSize = { width: 600, height: 600 }; // Fixed room size
         this.roomContainer = new Container();
         this.doorCooldown = false; // Cooldown for door transitions
         this.spawnRoom = null;

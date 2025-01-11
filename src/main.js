@@ -11,8 +11,8 @@ import { createCrosshair } from './crosshair.js';
 
     await app.init({
         view: Monitor,
-        width: 720,
-        height: 720,
+        width: 600,
+        height: 600,
         antialias: true,
         backgroundColor: 0x1099bb,
     });
