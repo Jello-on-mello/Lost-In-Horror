@@ -5,6 +5,7 @@ export class Player {
     constructor(app, playerTexture, gunTexture, rechamberAnimation, textureManager) {
         this.app = app;
         this.sprite = new Sprite(playerTexture);
+        this.sprite.scale.set(1.5, 1.5);
         this.sprite.anchor.set(0.5);
         this.sprite.x = app.screen.width / 2;
         this.sprite.y = app.screen.height / 2;
@@ -176,9 +177,16 @@ export class Player {
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
         const dy = targetCircle.y - this.sprite.y;
-        this.gun.rotation = Math.atan2(dy, dx);
-    }
-
+        const angle = Math.atan2(dy, dx);
+        this.gun.rotation = angle;
+    
+        // Flip the gun sprite vertically if aiming left
+        if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
+            this.gun.scale.y = -1;
+        } else {
+            this.gun.scale.y = 1;
+        }
+    } r
     update(targetCircle) {
         if (this.keys.up) this.sprite.y -= this.speed;
         if (this.keys.down) this.sprite.y += this.speed;

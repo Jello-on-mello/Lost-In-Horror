@@ -1,16 +1,15 @@
-import { Container, Graphics, Text } from 'pixi.js';
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, TilingSprite } from 'pixi.js';
 
 export class MapManager {
     constructor(app, player, textureManager) {
         this.app = app;
-        this.player = player; // Reference to the player
-        this.textureManager = textureManager; // Reference to the texture manager
+        this.player = player;
+        this.textureManager = textureManager;
         this.rooms = [];
         this.currentRoom = null;
-        this.roomSize = { width: 700, height: 700 }; // Fixed room size
+        this.roomSize = { width: 750, height: 750 };
         this.roomContainer = new Container();
-        this.doorCooldown = false; // Cooldown for door transitions
+        this.doorCooldown = false;
         this.spawnRoom = null;
         this.shopRoom = null;
         this.bossRoom = null;
@@ -18,11 +17,12 @@ export class MapManager {
         this.maxFloors = 4;
         this.app.stage.addChild(this.roomContainer);
 
-        this.doorSize = 100; // Size of the doors
+        this.doorSize = 100;
 
         this.generateMap();
         if (this.spawnRoom) {
-            this.loadCurrentRoom(this.spawnRoom); // Load the spawn room first
+            console.log("Loading spawn room:", this.spawnRoom);
+            this.loadCurrentRoom(this.spawnRoom);
         } else {
             console.error("No spawn room generated to load");
         }
@@ -33,8 +33,8 @@ export class MapManager {
     generateMap() {
         const directions = ['north', 'south', 'east', 'west'];
         const roomData = {};
-    
-        const generateRoom = (id, x, y) => {
+
+        const generateRoom = (id, x, y, type = 'default') => {
             return {
                 id,
                 x,
@@ -42,44 +42,50 @@ export class MapManager {
                 connections: { north: null, south: null, east: null, west: null },
                 visited: false,
                 isSpecial: false,
-                type: null,
+                type,
+                grid: Array.from({ length: 10 }, () =>
+                    Array.from({ length: 10 }, () => ({
+                        tile: "tile055",
+                        decoration: "none",
+                        enemy_spawn: false
+                    }))
+                )
             };
         };
-    
-        roomData[0] = generateRoom(0, 0, 0); // Starting room at the center (0, 0)
-    
+
+        roomData[0] = generateRoom(0, 0, 0, 'spawnRoom');
+        this.spawnRoom = roomData[0]; // Ensure spawnRoom is assigned
+
         let currentId = 1;
         let frontier = [roomData[0]];
-    
+
         while (currentId < 5) {
             const currentRoom = frontier[Math.floor(Math.random() * frontier.length)];
             const availableDirections = directions.filter(
-                dir => !currentRoom.connections[dir] // Check if direction is already connected
+                dir => !currentRoom.connections[dir]
             );
-    
+
             if (availableDirections.length === 0) {
                 frontier = frontier.filter(r => r.id !== currentRoom.id);
                 continue;
             }
-    
+
             const direction = availableDirections[Math.floor(Math.random() * availableDirections.length)];
             let newX = currentRoom.x;
             let newY = currentRoom.y;
-    
+
             if (direction === 'north') newY -= 1;
             if (direction === 'south') newY += 1;
             if (direction === 'east') newX += 1;
             if (direction === 'west') newX -= 1;
-    
+
             const existingRoom = Object.values(roomData).find(r => r.x === newX && r.y === newY);
             if (existingRoom) {
-                // Ensure bi-directional connection only if both sides are valid
                 if (!existingRoom.connections[this.getOppositeDirection(direction)]) {
                     currentRoom.connections[direction] = existingRoom;
                     existingRoom.connections[this.getOppositeDirection(direction)] = currentRoom;
                 }
             } else {
-                // Create a new room
                 const newRoom = generateRoom(currentId, newX, newY);
                 roomData[currentId] = newRoom;
                 currentRoom.connections[direction] = newRoom;
@@ -88,21 +94,28 @@ export class MapManager {
                 currentId++;
             }
         }
-    
+
         this.rooms = Object.values(roomData);
-    
-        // Add special rooms
-        this.addSpecialRoom('spawnRoom');
+
         this.addSpecialRoom('shopRoom');
         this.addSpecialRoom('bossRoom');
-    
-        // Validate connections
+
         this.validateConnections();
     }
+
+    moveToRoom(direction) {
+        if (!this.currentRoom || !this.currentRoom.connections[direction]) {
+            console.error(`Cannot move to room in direction: ${direction}`);
+            return;
+        }
     
+        const nextRoom = this.currentRoom.connections[direction];
+        this.loadCurrentRoom(nextRoom, direction);
+    }
+
     addSpecialRoom(type) {
         const directions = ['north', 'south', 'east', 'west'];
-        const nonSpecialRooms = this.rooms.filter(room => !room.isSpecial && Object.values(room.connections).filter(conn => conn).length < 4);
+        const nonSpecialRooms = this.rooms.filter(room => !room.isSpecial && Object.values(room.connections).filter(conn => conn).length < 4 && !room.hasSpecialConnection);
     
         if (nonSpecialRooms.length === 0) {
             console.error(`No available rooms to connect the ${type}`);
@@ -134,13 +147,20 @@ export class MapManager {
             visited: false,
             isSpecial: true,
             type,
+            grid: Array.from({ length: 10 }, () =>
+                Array.from({ length: 10 }, () => ({
+                    tile: "tile055",
+                    decoration: "none",
+                    enemy_spawn: false
+                }))
+            )
         };
     
         targetRoom.connections[direction] = newRoom;
         newRoom.connections[this.getOppositeDirection(direction)] = targetRoom;
+        targetRoom.hasSpecialConnection = true; // Mark the target room as having a special connection
         this.rooms.push(newRoom);
-
-        // Assign the special room to the corresponding property
+    
         if (type === 'spawnRoom') this.spawnRoom = newRoom;
         if (type === 'shopRoom') this.shopRoom = newRoom;
         if (type === 'bossRoom') this.bossRoom = newRoom;
@@ -157,99 +177,61 @@ export class MapManager {
                     console.error(
                         `Connection mismatch: Room ${room.id} has ${dir} pointing to Room ${connectedRoom.id}, but the reverse is not true.`
                     );
-                    // Fix the connection mismatch
                     connectedRoom.connections[this.getOppositeDirection(dir)] = room;
                 }
             }
         });
     }
 
-    moveToRoom(direction) {
-        if (!this.currentRoom) {
-            console.error("Current room is not defined");
-            return;
-        }
-
-        if (!this.currentRoom.connections) {
-            console.error("Current room has no connections");
-            return;
-        }
-
-        const targetRoom = this.currentRoom.connections[direction];
-        if (!targetRoom) {
-            console.error(`No room in the ${direction} direction`);
-            return;
-        }
-
-        // Directly load the target room without animation
-        this.loadCurrentRoom(targetRoom, direction);
-    }
-
-    getOppositeDirection(direction) {
-        const opposites = {
-            north: 'south',
-            south: 'north',
-            east: 'west',
-            west: 'east',
-        };
-        return opposites[direction];
-    }
-
     loadCurrentRoom(room, fromDirection = null) {
-    this.currentRoom = room;
-    this.roomContainer.removeChildren();
+        this.currentRoom = room;
+        this.roomContainer.removeChildren();
 
-         // Despawn all bullets
-         this.player.despawnBullets();
+        this.player.despawnBullets();
 
-    // Draw the current room with textures
-    const floorTextures = {
-        1: 'DestroyedGreenTallGrass',
-        2: 'DestroyedDarkGreenTallGrass',
-        3: 'DestroyedGoldTallGrass',
-        4: 'DestroyedCrimsonTallGrass'
-    };
-    const textureName = floorTextures[this.currentFloor];
-    const texture = this.textureManager.getTexture(textureName);
+        const tiledSprite = new TilingSprite(
+            this.textureManager.getTexture("tile055"),
+            this.roomSize.width,
+            this.roomSize.height
+        );
+        this.roomContainer.addChild(tiledSprite);
 
-    // Create a tiled sprite for the room background
-    const tiledSprite = new PIXI.TilingSprite(texture, this.roomSize.width, this.roomSize.height);
-    this.roomContainer.addChild(tiledSprite);
+        console.log(
+            `Room ID: ${room.id}, Floor: ${this.currentFloor}, Type: ${room.type.toUpperCase()}, Shape: ${
+                this.getRoomShape(room)
+            }`
+        );
 
-    // Add room ID text
-    let roomTextContent = `Room ${room.id} Floor ${this.currentFloor}`;
-    if (room.isSpecial) {
-        roomTextContent += ` ${room.type.toUpperCase().replace('ROOM', '')}`;
+        this.drawRoomConnections();
+
+        if (fromDirection) {
+            this.placePlayerNearEntrance(fromDirection);
+        }
+
+        this.app.stage.addChild(this.player.sprite);
+
+        this.doorCooldown = true;
+        setTimeout(() => {
+            this.doorCooldown = false;
+        }, 1000);
     }
-    const roomText = new Text(roomTextContent, {
-        fill: 'white',
-        fontSize: 24,
-    });
-    roomText.x = 10;
-    roomText.y = 10;
-    this.roomContainer.addChild(roomText);
-
-    // Draw connections to adjacent rooms
-    this.drawRoomConnections();
-
-    // Position player near entrance if coming from another room
-    if (fromDirection) {
-        this.placePlayerNearEntrance(fromDirection);
+    
+    getRoomShape(room) {
+        const connections = Object.values(room.connections).filter(conn => conn).length;
+        if (connections === 1) return 'DeadEnd';
+        if (connections === 2) {
+            if (room.connections.north && room.connections.south) return 'Vertical';
+            if (room.connections.east && room.connections.west) return 'Horizontal';
+            return 'LShape';
+        }
+        if (connections === 3) return 'TShape';
+        if (connections === 4) return 'CrossShape';
+        return 'Default';
     }
-
-    // Ensure player is rendered on top of the map
-    this.app.stage.addChild(this.player.sprite);
-
-    // Set door cooldown to prevent immediate re-entry
-    this.doorCooldown = true;
-    setTimeout(() => {
-        this.doorCooldown = false;
-    }, 1000); // 1 second cooldown
-}
 
     drawRoomConnections() {
         for (const direction in this.currentRoom.connections) {
-            if (!this.currentRoom.connections[direction]) continue; // Skip non-existent connections
+            if (!this.currentRoom.connections[direction]) continue;
 
             const door = new Graphics();
             door.beginFill(0xaaaaaa);
@@ -289,21 +271,20 @@ export class MapManager {
                     break;
             }
 
-            // Apply tint based on the room type
             const connectedRoom = this.currentRoom.connections[direction];
             if (connectedRoom) {
                 switch (connectedRoom.type) {
                     case 'spawnRoom':
-                        door.tint = 0x00ff00; // Green tint for spawn room
+                        door.tint = 0x00ff00;
                         break;
                     case 'shopRoom':
-                        door.tint = 0xffff00; // Yellow tint for shop room
+                        door.tint = 0xffff00;
                         break;
                     case 'bossRoom':
-                        door.tint = 0xff0000; // Red tint for boss room
+                        door.tint = 0xff0000;
                         break;
                     default:
-                        door.tint = 0xffffff; // Default light tint for normal rooms
+                        door.tint = 0xffffff;
                         break;
                 }
             }
@@ -316,10 +297,9 @@ export class MapManager {
             this.roomContainer.addChild(door);
         }
 
-        // Add a special door for the boss room to go to the next floor
         if (this.currentRoom.type === 'bossRoom' && this.currentFloor < this.maxFloors) {
             const nextFloorDoor = new Graphics();
-            nextFloorDoor.beginFill(0xff0000); // Red color for the next floor door
+            nextFloorDoor.beginFill(0xff0000);
             nextFloorDoor.drawRect(
                 this.roomSize.width / 2 - this.doorSize / 2,
                 this.roomSize.height / 2 - this.doorSize / 2,
@@ -335,18 +315,27 @@ export class MapManager {
     }
 
     moveToNextFloor() {
-        if (this.currentFloor >= this.maxFloors) {
-            console.log("Congratulations! You've won the game!");
-            return;
-        }
-
         this.currentFloor++;
         this.generateMap();
         this.loadCurrentRoom(this.spawnRoom);
     }
 
+    getNextFloorDoorBounds() {
+        if (this.currentRoom.type !== 'bossRoom' || this.currentFloor >= this.maxFloors) {
+            return null;
+        }
+    
+        const doorSize = this.doorSize;
+        return {
+            x: this.roomSize.width / 2 - doorSize / 2,
+            y: this.roomSize.height / 2 - doorSize / 2,
+            width: doorSize,
+            height: doorSize,
+        };
+    }
+
     placePlayerNearEntrance(fromDirection) {
-        const offset = 50; // Distance from the door
+        const offset = 50;
 
         switch (fromDirection) {
             case 'north':
@@ -379,7 +368,7 @@ export class MapManager {
         }
 
         if (this.doorCooldown) {
-            return; // Skip door checks if cooldown is active
+            return;
         }
 
         for (const direction in this.currentRoom.connections) {
@@ -392,8 +381,14 @@ export class MapManager {
 
             if (this.isPlayerTouchingDoor(doorBounds)) {
                 this.moveToRoom(direction);
-                break; // Prevent multiple transitions in one frame
+                break;
             }
+        }
+
+        // Check if the player is touching the next floor door
+        const nextFloorDoorBounds = this.getNextFloorDoorBounds();
+        if (nextFloorDoorBounds && this.isPlayerTouchingDoor(nextFloorDoorBounds)) {
+            this.moveToNextFloor();
         }
     }
 
@@ -431,6 +426,16 @@ export class MapManager {
                     height: doorWidth,
                 };
         }
+    }
+
+    getOppositeDirection(direction) {
+        const opposites = {
+            north: 'south',
+            south: 'north',
+            east: 'west',
+            west: 'east'
+        };
+        return opposites[direction];
     }
 
     isPlayerTouchingDoor(doorBounds) {

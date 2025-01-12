@@ -1,4 +1,4 @@
-import { Application, Assets } from 'pixi.js';
+import { Application } from 'pixi.js';
 import { Player } from './player.js';
 import { MapManager } from './mapManager.js';
 import { TextureManager } from './textureManager.js';
@@ -11,8 +11,8 @@ import { createCrosshair } from './crosshair.js';
 
     await app.init({
         view: Monitor,
-        width: 700,
-        height: 700,
+        width: 750,
+        height: 750,
         antialias: true,
         backgroundColor: 0x1099bb,
     });
@@ -31,7 +31,7 @@ import { createCrosshair } from './crosshair.js';
     });
 
     // Initialize TextureManager and load textures
-    const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_ Spritesheet.png');
+    const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_Spritesheet.png');
     await textureManager.loadTextures();
 
     // Retrieve textures from TextureManager
@@ -49,7 +49,7 @@ import { createCrosshair } from './crosshair.js';
     const player = new Player(app, playerTexture, GunTexture, RechamberAnimation, textureManager);
     app.stage.addChild(player.sprite);
 
-    // Initialize MapManager (pass app, player, and textureManager as parameters)
+    // Initialize MapManager without templates
     const mapManager = new MapManager(app, player, textureManager);
 
     // Ensure the room and player are added correctly in Z-index order
