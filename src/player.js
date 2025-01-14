@@ -14,8 +14,16 @@ export class Player {
         this.idleSprite.anchor.set(0.5);
         this.sprite.addChild(this.idleSprite);
 
-        this.speed = 5;
+        this.speed = 2.5;
         this.hp = 3;
+        this.isInvincible = false; // Add invincibility state
+
+        this.isDodging = false; // Add dodging state
+        this.dodgeCooldown = 1000; // Cooldown duration for dodging in milliseconds
+        this.lastDodgeTime = 0; // Last time the dodge action was performed
+        this.dodgeDistance = 200; // Distance to dodge
+        this.dodgeDuration = 300; // Duration of the dodge in milliseconds
+        this.dodgeTrailInterval = 10; // Interval between trail sprites in milliseconds
 
         // Gun animation setup
         this.gun = new AnimatedSprite(rechamberAnimation);
@@ -38,7 +46,7 @@ export class Player {
         this.isReloading = false;
         this.shotCooldown = 500;
         this.lastShotTime = 0;
-        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
+        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false, dodge: false };
 
         // Reload animation
         this.reloadAnimationContainer = new Container();
@@ -75,36 +83,100 @@ export class Player {
             this.sprite.addChild(sprite);
         }
 
+        // Death animation setup
+        this.deathTextures = [
+            textureManager.getTexture('PlayerDeath1'),
+            textureManager.getTexture('PlayerDeath2')
+        ];
+        this.deathSprite = new AnimatedSprite(this.deathTextures);
+        this.deathSprite.anchor.set(0.5);
+        this.deathSprite.animationSpeed = 0.1;
+        this.deathSprite.loop = false;
+        this.deathSprite.visible = false;
+        this.sprite.addChild(this.deathSprite);
+
         this.setupControls();
     }
 
     takeDamage(damage = 1) {
+        if (this.isInvincible) return; // Ignore damage if invincible
+
         this.hp -= damage;
         console.log(`Player HP: ${this.hp}`);
         if (this.hp <= 0) {
             console.log('Game Over!');
-            this.hp = 3; // Reset for testing purposes
+            this.triggerDeathAnimation();
+        } else {
+            this.triggerInvincibilityFrames();
+            this.pushBackEnemies();
         }
     }
 
+    triggerInvincibilityFrames() {
+        this.isInvincible = true;
+        this.sprite.alpha = 0.5; // Make the player semi-transparent to indicate invincibility
+
+        setTimeout(() => {
+            this.isInvincible = false;
+            this.sprite.alpha = 1; // Restore the player's opacity
+        }, 1000); // 1 second of invincibility
+    }
+
+    pushBackEnemies() {
+        this.app.enemyManager.enemies.forEach(enemy => {
+            const dx = enemy.sprite.x - this.sprite.x;
+            const dy = enemy.sprite.y - this.sprite.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < 150) { // Adjust the push-back distance as needed
+                const pushBackDistance = 50;
+                enemy.sprite.x += (dx / distance) * pushBackDistance;
+                enemy.sprite.y += (dy / distance) * pushBackDistance;
+                enemy.applyStun(); // Apply stun effect
+            }
+        });
+    }
+
+    triggerDeathAnimation() {
+        this.idleSprite.visible = false;
+        for (const direction in this.walkingSprites) {
+            this.walkingSprites[direction].visible = false;
+            this.walkingSprites[direction].stop();
+        }
+        this.deathSprite.visible = true;
+        this.deathSprite.gotoAndPlay(0);
+        this.disableMovement();
+    }
+
+    disableMovement() {
+        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
+        window.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener('keyup', this.handleKeyUp);
+    }
+
     setupControls() {
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'ArrowUp') this.keys.up = true;
-            if (e.code === 'ArrowDown') this.keys.down = true;
-            if (e.code === 'ArrowLeft') this.keys.left = true;
-            if (e.code === 'ArrowRight') this.keys.right = true;
+        this.handleKeyDown = (e) => {
+            if (e.code === 'KeyW') this.keys.up = true;
+            if (e.code === 'KeyS') this.keys.down = true;
+            if (e.code === 'KeyA') this.keys.left = true;
+            if (e.code === 'KeyD') this.keys.right = true;
             if (e.code === 'Space') this.keys.shoot = true;
             if (e.code === 'KeyR') this.keys.reload = true;
-        });
+            if (e.code === 'ShiftLeft') this.keys.dodge = true; // Add dodge key
+        };
 
-        window.addEventListener('keyup', (e) => {
-            if (e.code === 'ArrowUp') this.keys.up = false;
-            if (e.code === 'ArrowDown') this.keys.down = false;
-            if (e.code === 'ArrowLeft') this.keys.left = false;
-            if (e.code === 'ArrowRight') this.keys.right = false;
+        this.handleKeyUp = (e) => {
+            if (e.code === 'KeyW') this.keys.up = false;
+            if (e.code === 'KeyS') this.keys.down = false;
+            if (e.code === 'KeyA') this.keys.left = false;
+            if (e.code === 'KeyD') this.keys.right = false;
             if (e.code === 'Space') this.keys.shoot = false;
             if (e.code === 'KeyR') this.keys.reload = false;
-        });
+            if (e.code === 'ShiftLeft') this.keys.dodge = false; // Add dodge key
+        };
+
+        window.addEventListener('keydown', this.handleKeyDown);
+        window.addEventListener('keyup', this.handleKeyUp);
     }
 
     shootShotgun() {
@@ -238,8 +310,80 @@ export class Player {
             this.idleSprite.scale.x = 1; // Ensure the texture is not flipped horizontally
         }
     }
+    
+    dodge() {
+        const now = Date.now();
+        if (this.isDodging || now - this.lastDodgeTime < this.dodgeCooldown) return; // Prevent dodging if already dodging or cooldown is active
+
+        this.isDodging = true;
+        this.isInvincible = true;
+        this.lastDodgeTime = now; // Update the last dodge time
+        const direction = this.getMovementDirection();
+        const startX = this.sprite.x;
+        const startY = this.sprite.y;
+        const endX = startX + direction.x * this.dodgeDistance;
+        const endY = startY + direction.y * this.dodgeDistance;
+
+        const trailSprites = [];
+        const trailCount = this.dodgeDuration / this.dodgeTrailInterval;
+
+        for (let i = 0; i < trailCount; i++) {
+            setTimeout(() => {
+                const trailSprite = new Sprite(this.sprite.texture);
+                trailSprite.x = startX + direction.x * (this.dodgeDistance / trailCount) * i;
+                trailSprite.y = startY + direction.y * (this.dodgeDistance / trailCount) * i;
+                trailSprite.alpha = 1 - (i / trailCount);
+                this.app.stage.addChild(trailSprite);
+                trailSprites.push(trailSprite);
+
+                // Remove trail sprite after a while
+                setTimeout(() => {
+                    this.app.stage.removeChild(trailSprite);
+                }, this.dodgeDuration);
+            }, i * this.dodgeTrailInterval);
+        }
+
+        this.sprite.x = endX;
+        this.sprite.y = endY;
+
+        setTimeout(() => {
+            this.isDodging = false;
+            this.isInvincible = false;
+        }, this.dodgeDuration);
+    }
+
+    getMovementDirection() {
+        const direction = { x: 0, y: 0 };
+        if (this.keys.up) direction.y -= 1;
+        if (this.keys.down) direction.y += 1;
+        if (this.keys.left) direction.x -= 1;
+        if (this.keys.right) direction.x += 1;
+        const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (length > 0) {
+            direction.x /= length;
+            direction.y /= length;
+        }
+        return direction;
+    }
+
+
+    getMovementDirection() {
+        const direction = { x: 0, y: 0 };
+        if (this.keys.up) direction.y -= 1;
+        if (this.keys.down) direction.y += 1;
+        if (this.keys.left) direction.x -= 1;
+        if (this.keys.right) direction.x += 1;
+        const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (length > 0) {
+            direction.x /= length;
+            direction.y /= length;
+        }
+        return direction;
+    }
 
     update(targetCircle) {
+        if (this.deathSprite.visible) return; // Disable update if death animation is playing
+
         let isMoving = false;
 
         // Update player position based on key inputs
@@ -273,6 +417,11 @@ export class Player {
         // Handle reloading
         if (this.keys.reload) {
             this.reload();
+        }
+
+        // Handle dodging
+        if (this.keys.dodge) {
+            this.dodge();
         }
 
         // Update gun rotation

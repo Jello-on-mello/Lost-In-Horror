@@ -1,13 +1,10 @@
-import { Player } from './player.js';
-import { MapManager } from './mapManager.js';
-import { Slime } from './Enemies/Slime.js';
-
 class DevCheats {
     constructor(player, mapManager, enemyManager) {
         this.player = player;
         this.mapManager = mapManager;
         this.enemyManager = enemyManager;
         this.cheatsEnabled = false;
+        this.disableEnemySpawning = false; // Add a flag to disable enemy spawning
         this.initConsoleCommands();
     }
 
@@ -91,6 +88,13 @@ class DevCheats {
             this.enemyManager.enemies.push(enemy);
             this.mapManager.app.stage.addChild(enemy.sprite);
             console.log(`Spawned ${enemyType} at (${x}, ${y}).`);
+        };
+
+        // Add a new cheat to disable enemy spawning
+        window.disableEnemySpawning = (disable) => {
+            if (!this.cheatsEnabled) return console.log('DevCheats are not enabled.');
+            this.disableEnemySpawning = disable;
+            console.log(`Enemy spawning ${disable ? 'disabled' : 'enabled'}.`);
         };
     }
 }

@@ -1,14 +1,16 @@
 import { Graphics } from 'pixi.js';
 
 export class Slime {
-    constructor(app, player, room, roomSize, speed = 2, damage = 1) {
+    constructor(app, player, room, roomSize, speed = 0.75, damage = 1) {
         this.app = app;
         this.player = player;
         this.room = room;
-        this.hp = 4;
+        this.hp = 2;
         this.isDead = false;
         this.speed = speed;
         this.damage = damage;
+        this.isStunned = false; // Add stun state
+        this.stunTimeout = null; // Add stun timeout
 
         this.sprite = new Graphics();
         this.sprite.beginFill(0x00ff00);
@@ -32,7 +34,7 @@ export class Slime {
     }
 
     update(enemies) {
-        if (this.isDead) return;
+        if (this.isDead || this.isStunned) return; // Skip update if dead or stunned
 
         const dx = this.player.sprite.x - this.sprite.x;
         const dy = this.player.sprite.y - this.sprite.y;
@@ -69,6 +71,17 @@ export class Slime {
             this.isDead = true;
             this.sprite.destroy();
         }
+    }
+
+    applyStun(duration = 1000) {
+        this.isStunned = true;
+        this.sprite.alpha = 0.5; // Indicate stun visually
+
+        clearTimeout(this.stunTimeout);
+        this.stunTimeout = setTimeout(() => {
+            this.isStunned = false;
+            this.sprite.alpha = 1; // Restore opacity
+        }, duration);
     }
 
     despawn() {
