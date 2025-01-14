@@ -22,14 +22,6 @@ export class MapManager {
         this.doorSize = 100;
 
         this.generateMap();
-        // Remove the call to loadCurrentRoom here
-        // if (this.spawnRoom) {
-        //     console.log("Loading spawn room:", this.spawnRoom);
-        //     this.loadCurrentRoom(this.spawnRoom);
-        // } else {
-        //     console.error("No spawn room generated to load");
-        // }
-
         app.ticker.add(this.update.bind(this));
     }
 
