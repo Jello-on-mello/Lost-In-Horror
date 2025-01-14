@@ -4,25 +4,34 @@ import { Bullet } from './bullet.js';
 export class Player {
     constructor(app, playerTexture, gunTexture, rechamberAnimation, textureManager) {
         this.app = app;
-        this.sprite = new Sprite(playerTexture);
-        this.sprite.scale.set(1.5, 1.5);
+        this.sprite = new Sprite();
+        this.sprite.scale.set(0.75, 0.75);
         this.sprite.anchor.set(0.5);
         this.sprite.x = app.screen.width / 2;
         this.sprite.y = app.screen.height / 2;
-    
+
+        this.idleSprite = new Sprite(playerTexture);
+        this.idleSprite.anchor.set(0.5);
+        this.sprite.addChild(this.idleSprite);
+
         this.speed = 5;
         this.hp = 3;
-    
+
         // Gun animation setup
         this.gun = new AnimatedSprite(rechamberAnimation);
         this.gun.anchor.set(0.5);
         this.gun.animationSpeed = 0.1;
         this.gun.loop = false;
         this.gun.texture = gunTexture;
+
+        // Set the gun's relative position
+        this.gun.x = 2; // Adjust this value to position the gun horizontally
+        this.gun.y = 5; // Adjust this value to position the gun vertically
+
         this.sprite.addChild(this.gun);
-    
+
         this.rechamberAnimation = rechamberAnimation; // Store the animation frames
-    
+
         this.bullets = [];
         this.currentShells = 4;
         this.MAX_SHELLS = 4;
@@ -30,16 +39,45 @@ export class Player {
         this.shotCooldown = 500;
         this.lastShotTime = 0;
         this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
-    
+
         // Reload animation
         this.reloadAnimationContainer = new Container();
         this.reloadArrows = [];
         this.initReloadAnimation();
         this.sprite.addChild(this.reloadAnimationContainer);
-    
+
+        // Store idle and walking textures
+        this.idleTextures = {
+            front: textureManager.getTexture('PlayerIdleDown'),
+            back: textureManager.getTexture('PlayerIdleUp'),
+            side: textureManager.getTexture('PlayerIdleSide')
+        };
+
+        this.walkingTextures = {
+            front: textureManager.getTexture('PlayerWalkDown'),
+            back: textureManager.getTexture('PlayerWalkUp'),
+            side: textureManager.getTexture('PlayerWalkSide')
+        };
+
+        this.walkingSprites = {
+            front: new AnimatedSprite(this.walkingTextures.front),
+            back: new AnimatedSprite(this.walkingTextures.back),
+            side: new AnimatedSprite(this.walkingTextures.side)
+        };
+
+        // Set up walking animations
+        for (const direction in this.walkingSprites) {
+            const sprite = this.walkingSprites[direction];
+            sprite.anchor.set(0.5);
+            sprite.animationSpeed = 0.1;
+            sprite.loop = true;
+            sprite.visible = false;
+            this.sprite.addChild(sprite);
+        }
+
         this.setupControls();
     }
-    
+
     takeDamage(damage = 1) {
         this.hp -= damage;
         console.log(`Player HP: ${this.hp}`);
@@ -107,63 +145,62 @@ export class Player {
     initReloadAnimation() {
         const shellSpacing = 15; // Space between shells
         const yOffset = 40; // Position below the player
-        
         for (let i = 0; i < 4; i++) {
             const shell = new Graphics();
-    
+
             // Draw shell body (orange)
             shell.beginFill(0xff4500);
             shell.drawRect(-3, -5, 6, 10);
             shell.endFill();
-    
+
             // Draw shell cap (brass/yellow)
             shell.beginFill(0xffd700);
             shell.drawRect(-3, 5, 6, 5);
             shell.endFill();
-    
+
             shell.x = i * shellSpacing - (1.5 * shellSpacing); // Center shells horizontally
             shell.y = yOffset;
             shell.visible = false;
-    
+
             this.reloadArrows.push(shell); // Repurposing the reloadArrows array for shells
             this.reloadAnimationContainer.addChild(shell);
         }
-    
+
         this.reloadAnimationContainer.visible = false;
         this.sprite.addChild(this.reloadAnimationContainer); // Attach animation to player
     }
-    
+
     startReloadAnimation() {
         this.reloadAnimationContainer.visible = true;
-    
+
         const reloadTime = 2000; // Total reload time in ms
         const segmentTime = reloadTime / 4; // Time for each shell to show
         let currentShell = 0;
-    
+
         const showShell = () => {
             if (currentShell < this.reloadArrows.length) {
                 this.reloadArrows[currentShell].visible = true;
                 currentShell++;
             }
-    
+
             if (currentShell === this.reloadArrows.length) {
                 setTimeout(() => {
                     this.completeReloadAnimation(); // Trigger completion once the last shell shows
                 }, 100); // Brief delay to make the last shell’s green state visible
             }
         };
-    
+
         this.reloadInterval = setInterval(showShell, segmentTime);
     }
-    
+
     completeReloadAnimation() {
         clearInterval(this.reloadInterval);
-        
+
         // Turn all shells green
         this.reloadArrows.forEach((shell) => {
             shell.tint = 0x00ff00; // Apply green tint
         });
-    
+
         // Keep the shells visible for a noticeable period after turning green
         setTimeout(() => {
             this.reloadArrows.forEach((shell) => {
@@ -179,40 +216,105 @@ export class Player {
         const dy = targetCircle.y - this.sprite.y;
         const angle = Math.atan2(dy, dx);
         this.gun.rotation = angle;
-    
+
         // Flip the gun sprite vertically if aiming left
         if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
             this.gun.scale.y = -1;
         } else {
             this.gun.scale.y = 1;
         }
-    } 
+
+        if (angle > -Math.PI / 4 && angle <= Math.PI / 4) {
+            this.idleSprite.texture = this.idleTextures.side; // Right
+            this.idleSprite.scale.x = 1; // Ensure the texture is not flipped horizontally
+        } else if (angle > Math.PI / 4 && angle <= (3 * Math.PI) / 4) {
+            this.idleSprite.texture = this.idleTextures.front; // Up
+            this.idleSprite.scale.x = 1; // Ensure the texture is not flipped horizontally
+        } else if (angle > (3 * Math.PI) / 4 || angle <= -(3 * Math.PI) / 4) {
+            this.idleSprite.texture = this.idleTextures.side; // Left
+            this.idleSprite.scale.x = -1; // Flip the texture horizontally
+        } else {
+            this.idleSprite.texture = this.idleTextures.back; // Down
+            this.idleSprite.scale.x = 1; // Ensure the texture is not flipped horizontally
+        }
+    }
 
     update(targetCircle) {
-        if (this.keys.up) this.sprite.y -= this.speed;
-        if (this.keys.down) this.sprite.y += this.speed;
-        if (this.keys.left) this.sprite.x -= this.speed;
-        if (this.keys.right) this.sprite.x += this.speed;
+        let isMoving = false;
 
+        // Update player position based on key inputs
+        if (this.keys.up) {
+            this.sprite.y -= this.speed;
+            isMoving = true;
+        }
+        if (this.keys.down) {
+            this.sprite.y += this.speed;
+            isMoving = true;
+        }
+        if (this.keys.left) {
+            this.sprite.x -= this.speed;
+            isMoving = true;
+        }
+        if (this.keys.right) {
+            this.sprite.x += this.speed;
+            isMoving = true;
+        }
+
+        // Ensure player stays within screen bounds
         this.sprite.x = Math.max(0, Math.min(this.sprite.x, this.app.screen.width));
         this.sprite.y = Math.max(0, Math.min(this.sprite.y, this.app.screen.height));
 
+        // Handle shooting
         if (this.keys.shoot && Date.now() - this.lastShotTime >= this.shotCooldown) {
             this.shootShotgun();
             this.lastShotTime = Date.now();
         }
 
+        // Handle reloading
         if (this.keys.reload) {
             this.reload();
         }
 
+        // Update gun rotation
         this.updateGunRotation(targetCircle);
 
+        // Switch between idle and walking animations
+        if (isMoving) {
+            this.idleSprite.visible = false;
+            for (const direction in this.walkingSprites) {
+                this.walkingSprites[direction].visible = false;
+                this.walkingSprites[direction].stop();
+            }
+            if (this.keys.up) {
+                this.walkingSprites.back.visible = true;
+                this.walkingSprites.back.play();
+            } else if (this.keys.down) {
+                this.walkingSprites.front.visible = true;
+                this.walkingSprites.front.play();
+            } else if (this.keys.left) {
+                this.walkingSprites.side.visible = true;
+                this.walkingSprites.side.scale.x = -1; // Flip the texture horizontally
+                this.walkingSprites.side.play();
+            } else if (this.keys.right) {
+                this.walkingSprites.side.visible = true;
+                this.walkingSprites.side.scale.x = 1; // Ensure the texture is not flipped horizontally
+                this.walkingSprites.side.play();
+            }
+        } else {
+            this.idleSprite.visible = true;
+            for (const direction in this.walkingSprites) {
+                this.walkingSprites[direction].visible = false;
+                this.walkingSprites[direction].stop();
+            }
+        }
+
+        // Update bullets
         this.bullets.forEach(bullet => {
             bullet.update();
             bullet.checkCollision(this.app.enemyManager.enemies); // Check for collisions with enemies
         });
 
+        // Remove bullets that are out of bounds
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const bullet = this.bullets[i];
             bullet.bullets.forEach(b => {
