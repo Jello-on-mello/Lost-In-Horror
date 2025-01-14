@@ -31,19 +31,36 @@ export class Slime {
         this.sprite.y = spawnY;
     }
 
-    update() {
+    update(enemies) {
         if (this.isDead) return;
-    
+
         const dx = this.player.sprite.x - this.sprite.x;
         const dy = this.player.sprite.y - this.sprite.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-    
+
         if (distance < 15) {
             this.player.takeDamage(this.damage);
         }
-    
+
         this.sprite.x += (dx / distance) * this.speed;
         this.sprite.y += (dy / distance) * this.speed;
+
+        // Check for collisions with other enemies
+        enemies.forEach(enemy => {
+            if (enemy !== this && !enemy.isDead) {
+                const ex = enemy.sprite.x - this.sprite.x;
+                const ey = enemy.sprite.y - this.sprite.y;
+                const edistance = Math.sqrt(ex * ex + ey * ey);
+
+                if (edistance < 30) { // Adjust the minimum distance as needed
+                    const overlap = 30 - edistance;
+                    this.sprite.x -= (ex / edistance) * overlap / 2;
+                    this.sprite.y -= (ey / edistance) * overlap / 2;
+                    enemy.sprite.x += (ex / edistance) * overlap / 2;
+                    enemy.sprite.y += (ey / edistance) * overlap / 2;
+                }
+            }
+        });
     }
 
     takeDamage() {

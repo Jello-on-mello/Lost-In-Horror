@@ -35,7 +35,8 @@ export class EnemyManager {
         } else {
             const numEnemies = Math.floor(Math.random() * 5) + 3; // Random number of enemies between 3 and 7
             for (let i = 0; i < numEnemies; i++) {
-                const enemy = new enemyClass[0](this.app, this.player, room, roomSize, 2, 1); // Example speed and damage
+                const randomIndex = Math.floor(Math.random() * enemyClass.length);
+                const enemy = new enemyClass[randomIndex](this.app, this.player, room, roomSize, 2, 1); // Example speed and damage
                 this.enemies.push(enemy);
                 this.app.stage.addChild(enemy.sprite);
                 console.log(`Spawned enemy: ${enemy.constructor.name} at (${enemy.sprite.x}, ${enemy.sprite.y})`); // Debugging information
@@ -44,11 +45,11 @@ export class EnemyManager {
     }
 
     update() {
-        this.enemies.forEach(enemy => enemy.update());
-
+        this.enemies.forEach(enemy => enemy.update(this.enemies));
+    
         // Remove dead enemies
         this.enemies = this.enemies.filter(enemy => !enemy.isDead);
-
+    
         // Prevent room or floor traversal if enemies are alive
         if (this.enemies.length > 0) {
             if (!this.cooldownSet) {
