@@ -1,4 +1,4 @@
-import { Container, Graphics, TilingSprite } from 'pixi.js';
+import { Container, Graphics, TilingSprite, Sprite } from 'pixi.js';
 
 export class MapManager {
     constructor(app, player, textureManager) {
@@ -53,13 +53,11 @@ export class MapManager {
             };
         };
 
-        roomData[0] = generateRoom(0, 0, 0, 'spawnRoom');
-        this.spawnRoom = roomData[0]; // Ensure spawnRoom is assigned
-
+        roomData[0] = generateRoom(0, 0, 0);
         let currentId = 1;
         let frontier = [roomData[0]];
 
-        while (currentId < 5) {
+        while (currentId < 6) {
             const currentRoom = frontier[Math.floor(Math.random() * frontier.length)];
             const availableDirections = directions.filter(
                 dir => !currentRoom.connections[dir]
@@ -97,6 +95,7 @@ export class MapManager {
 
         this.rooms = Object.values(roomData);
 
+        this.addSpecialRoom('spawnRoom');
         this.addSpecialRoom('shopRoom');
         this.addSpecialRoom('bossRoom');
 
@@ -159,6 +158,7 @@ export class MapManager {
         targetRoom.connections[direction] = newRoom;
         newRoom.connections[this.getOppositeDirection(direction)] = targetRoom;
         targetRoom.hasSpecialConnection = true; // Mark the target room as having a special connection
+        newRoom.hasSpecialConnection = true; // Mark the new special room as having a special connection
         this.rooms.push(newRoom);
     
         if (type === 'spawnRoom') this.spawnRoom = newRoom;
@@ -186,34 +186,106 @@ export class MapManager {
     loadCurrentRoom(room, fromDirection = null) {
         this.currentRoom = room;
         this.roomContainer.removeChildren();
-
+    
         this.player.despawnBullets();
-
+    
+        const tileMap = {
+            1: "tile055",
+            2: "tile058",
+            3: "tile049",
+            4: "tile052"
+        };
+    
+        const tile = tileMap[this.currentFloor] || "tile055";
+    
         const tiledSprite = new TilingSprite(
-            this.textureManager.getTexture("tile055"),
+            this.textureManager.getTexture(tile),
             this.roomSize.width,
             this.roomSize.height
         );
         this.roomContainer.addChild(tiledSprite);
-
+    
         console.log(
             `Room ID: ${room.id}, Floor: ${this.currentFloor}, Type: ${room.type.toUpperCase()}, Shape: ${
                 this.getRoomShape(room)
             }`
         );
-
-        this.drawRoomConnections();
-
+    
+        if (!room.decorations) {
+            room.decorations = this.generateDecorationsForRoom();
+        }
+        this.addDecorationsToRoom(room.decorations);
+    
+        this.drawRoomConnections(); // Ensure doors are added after decorations
+    
         if (fromDirection) {
             this.placePlayerNearEntrance(fromDirection);
         }
-
+    
         this.app.stage.addChild(this.player.sprite);
-
+    
         this.doorCooldown = true;
         setTimeout(() => {
             this.doorCooldown = false;
         }, 1000);
+    }
+
+    generateDecorationsForRoom() {
+        const decorations = [];
+        const decorationTiles = {
+            1: ["tile185","tile186","tile195","tile167", "tile168", "tile169", "tile170", "tile171", "tile172", "tile173", "tile174", "tile177", "tile178", "tile179"],
+            2: ["tile180", "tile181", "tile182", "tile183", "tile184", "tile175", "tile176"],
+            3: ["tile187", "tile188", "tile189","tile198", "tile199", "tile200", "tile201","tile203", "tile204", "tile205"],
+            4: ["tile210", "tile211", "tile212", "tile213", "tile214", "tile215"]
+        };
+
+        const tiles = decorationTiles[this.currentFloor] || [];
+        const numDecorations = Math.floor(Math.random() * 10) + 5;
+
+        for (let i = 0; i < numDecorations; i++) {
+            const tile = tiles[Math.floor(Math.random() * tiles.length)];
+            const x = Math.floor(Math.random() * this.roomSize.width);
+            const y = Math.floor(Math.random() * this.roomSize.height);
+            decorations.push({ tile, x, y });
+        }
+
+        return decorations;
+    }
+
+    addDecorationsToRoom(decorations) {
+        const decorationSprites = [];
+    
+        decorations.forEach(decoration => {
+            const sprite = new Sprite(this.textureManager.getTexture(decoration.tile));
+            sprite.x = decoration.x;
+            sprite.y = decoration.y;
+    
+            // Check for overlapping decorations
+            let overlap = false;
+            for (const existingSprite of decorationSprites) {
+                if (this.isOverlapping(sprite, existingSprite)) {
+                    overlap = true;
+                    break;
+                }
+            }
+    
+            if (!overlap) {
+                this.roomContainer.addChild(sprite);
+                decorationSprites.push(sprite);
+            }
+        });
+    }
+    
+    isOverlapping(sprite1, sprite2) {
+        const bounds1 = sprite1.getBounds();
+        const bounds2 = sprite2.getBounds();
+    
+        return (
+            bounds1.x < bounds2.x + bounds2.width &&
+            bounds1.x + bounds1.width > bounds2.x &&
+            bounds1.y < bounds2.y + bounds2.height &&
+            bounds1.y + bounds1.height > bounds2.y
+        );
     }
     
     getRoomShape(room) {
