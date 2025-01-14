@@ -39,9 +39,9 @@ export class Player {
     
         this.setupControls();
     }
-
-    takeDamage() {
-        this.hp--;
+    
+    takeDamage(damage = 1) {
+        this.hp -= damage;
         console.log(`Player HP: ${this.hp}`);
         if (this.hp <= 0) {
             console.log('Game Over!');
@@ -186,7 +186,8 @@ export class Player {
         } else {
             this.gun.scale.y = 1;
         }
-    } r
+    } 
+
     update(targetCircle) {
         if (this.keys.up) this.sprite.y -= this.speed;
         if (this.keys.down) this.sprite.y += this.speed;
@@ -207,7 +208,10 @@ export class Player {
 
         this.updateGunRotation(targetCircle);
 
-        this.bullets.forEach(bullet => bullet.update());
+        this.bullets.forEach(bullet => {
+            bullet.update();
+            bullet.checkCollision(this.app.enemyManager.enemies); // Check for collisions with enemies
+        });
 
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const bullet = this.bullets[i];

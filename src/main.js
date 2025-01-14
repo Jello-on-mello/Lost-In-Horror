@@ -4,6 +4,7 @@ import { MapManager } from './mapManager.js';
 import { TextureManager } from './textureManager.js';
 import { createCrosshair } from './crosshair.js';
 import DevCheats from './devCheats.js';
+import { EnemyManager } from './enemymanager.js';
 
 (async () => {
     // Ensure the canvas element exists
@@ -35,23 +36,36 @@ import DevCheats from './devCheats.js';
     const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_Spritesheet.png');
     await textureManager.loadTextures();
 
-    // Retrieve textures from TextureManager
-    const GunTexture = textureManager.getTexture('GunTexture');
-    const playerTexture = textureManager.getTexture('PlayerTexture');
-    const RechamberAnimation = [
+    // Initialize EnemyManager
+    const enemyManager = new EnemyManager(app, null, null); // Pass null for player and mapManager initially
+
+    // Initialize MapManager without loading the current room
+    const mapManager = new MapManager(app, null, textureManager, enemyManager);
+
+    // Set the mapManager in enemyManager
+    enemyManager.mapManager = mapManager;
+
+    // Create player instance
+    const player = new Player(app, textureManager.getTexture('PlayerTexture'), textureManager.getTexture('GunTexture'), [
         textureManager.getTexture('RechamberAnimation0'),
         textureManager.getTexture('RechamberAnimation1'),
         textureManager.getTexture('RechamberAnimation2'),
         textureManager.getTexture('RechamberAnimation3'),
         textureManager.getTexture('RechamberAnimation4')
-    ];
+    ], textureManager);
 
-    // Create player instance
-    const player = new Player(app, playerTexture, GunTexture, RechamberAnimation, textureManager);
+    // Set the player in enemyManager and mapManager
+    enemyManager.player = player;
+    mapManager.player = player;
+
+    // Load the current room after the player is set
+    if (mapManager.spawnRoom) {
+        mapManager.loadCurrentRoom(mapManager.spawnRoom);
+    } else {
+        console.error("No spawn room generated to load");
+    }
+
     app.stage.addChild(player.sprite);
-
-    // Initialize MapManager without templates
-    const mapManager = new MapManager(app, player, textureManager);
 
     // Ensure the room and player are added correctly in Z-index order
     app.stage.addChild(mapManager.roomContainer); // Map layer
@@ -61,9 +75,13 @@ import DevCheats from './devCheats.js';
     // Initialize DevCheats
     new DevCheats(player, mapManager);
 
+    // Make enemyManager accessible from the player
+    app.enemyManager = enemyManager;
+
     // Main game loop
     app.ticker.add(() => {
         mapManager.update();
         player.update(crosshair);
+        enemyManager.update();
     });
 })();

@@ -1,10 +1,12 @@
-import { Container, Graphics, TilingSprite, Sprite } from 'pixi.js';
+import { Container, TilingSprite , Graphics,Sprite } from 'pixi.js';
+import { EnemyManager } from './enemymanager.js';
 
 export class MapManager {
-    constructor(app, player, textureManager) {
+    constructor(app, player, textureManager, enemyManager) {
         this.app = app;
         this.player = player;
         this.textureManager = textureManager;
+        this.enemyManager = enemyManager; // Assign enemyManager
         this.rooms = [];
         this.currentRoom = null;
         this.roomSize = { width: 750, height: 750 };
@@ -20,12 +22,13 @@ export class MapManager {
         this.doorSize = 100;
 
         this.generateMap();
-        if (this.spawnRoom) {
-            console.log("Loading spawn room:", this.spawnRoom);
-            this.loadCurrentRoom(this.spawnRoom);
-        } else {
-            console.error("No spawn room generated to load");
-        }
+        // Remove the call to loadCurrentRoom here
+        // if (this.spawnRoom) {
+        //     console.log("Loading spawn room:", this.spawnRoom);
+        //     this.loadCurrentRoom(this.spawnRoom);
+        // } else {
+        //     console.error("No spawn room generated to load");
+        // }
 
         app.ticker.add(this.update.bind(this));
     }
@@ -105,6 +108,11 @@ export class MapManager {
     moveToRoom(direction) {
         if (!this.currentRoom || !this.currentRoom.connections[direction]) {
             console.error(`Cannot move to room in direction: ${direction}`);
+            return;
+        }
+    
+        if (this.enemyManager.enemies.length > 0) {
+            console.log('Cannot move to another room while enemies are alive.');
             return;
         }
     
@@ -228,6 +236,9 @@ export class MapManager {
         setTimeout(() => {
             this.doorCooldown = false;
         }, 1000);
+
+        // Call spawnEnemiesForRoom when a room is loaded
+        this.enemyManager.spawnEnemiesForRoom(room);
     }
 
     generateDecorationsForRoom() {

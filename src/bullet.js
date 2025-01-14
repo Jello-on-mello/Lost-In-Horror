@@ -30,6 +30,46 @@ export class Bullet {
         });
     }
 
+    checkCollision(enemies) {
+        const bulletsToRemove = [];
+    
+        this.bullets.forEach((bullet, bulletIndex) => {
+            enemies.forEach((enemy) => {
+                // Skip if enemy is null, destroyed, or doesn't have a sprite
+                if (!enemy || enemy.isDead || !enemy.sprite || enemy.sprite._destroyed) return;
+    
+                if (this.isColliding(bullet, enemy.sprite)) {
+                    enemy.takeDamage();
+                    bullet.destroy();
+                    bulletsToRemove.push(bulletIndex);
+                }
+            });
+        });
+
+        // Remove bullets after iteration
+        bulletsToRemove.sort((a, b) => b - a).forEach(index => {
+            this.bullets.splice(index, 1);
+        });
+    }
+
+    isColliding(bullet, enemySprite) {
+        // Skip if sprite is null, destroyed, or has no parent
+        if (!bullet || bullet._destroyed || !bullet.parent) return false;
+        if (!enemySprite || enemySprite._destroyed || !enemySprite.parent) return false;
+    
+        const bulletBounds = bullet.getBounds ? bullet.getBounds() : null;
+        const enemyBounds = enemySprite.getBounds ? enemySprite.getBounds() : null;
+    
+        if (!bulletBounds || !enemyBounds) return false;
+    
+        return (
+            bulletBounds.x < enemyBounds.x + enemyBounds.width &&
+            bulletBounds.x + bulletBounds.width > enemyBounds.x &&
+            bulletBounds.y < enemyBounds.y + enemyBounds.height &&
+            bulletBounds.y + bulletBounds.height > enemyBounds.y
+        );
+    }
+
     despawn() {
         this.bullets.forEach(bullet => bullet.destroy());
         this.bullets = [];
