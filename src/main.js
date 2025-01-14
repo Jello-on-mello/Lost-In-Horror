@@ -3,6 +3,7 @@ import { Player } from './player.js';
 import { MapManager } from './mapManager.js';
 import { TextureManager } from './textureManager.js';
 import { createCrosshair } from './crosshair.js';
+import DevCheats from './devCheats.js';
 
 (async () => {
     // Ensure the canvas element exists
@@ -56,6 +57,9 @@ import { createCrosshair } from './crosshair.js';
     app.stage.addChild(mapManager.roomContainer); // Map layer
     app.stage.addChild(player.sprite);           // Player on top
     app.stage.addChild(crosshair);               // UI element on top
+
+    // Initialize DevCheats
+    new DevCheats(player, mapManager);
 
     // Main game loop
     app.ticker.add(() => {
