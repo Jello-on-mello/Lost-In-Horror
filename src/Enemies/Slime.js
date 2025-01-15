@@ -63,8 +63,8 @@ export class Slime {
         });
     }
 
-    takeDamage() {
-        this.hp--;
+    takeDamage(damage = 1) {
+        this.hp -= damage;
         if (this.hp <= 0) {
             this.isDead = true;
             this.sprite.destroy();

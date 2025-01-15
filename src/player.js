@@ -14,8 +14,10 @@ export class Player {
         this.idleSprite.anchor.set(0.5);
         this.sprite.addChild(this.idleSprite);
 
-        this.speed = 5;
+        this.isDead = false;
+        this.speed = 2.5;
         this.hp = 3;
+        this.damage = 1;
 
         // Gun animation setup
         this.gun = new AnimatedSprite(rechamberAnimation);
@@ -65,6 +67,19 @@ export class Player {
             side: new AnimatedSprite(this.walkingTextures.side)
         };
 
+        this.deathTextures = [
+            textureManager.getTexture('PlayerDeath1'),
+            textureManager.getTexture('PlayerDeath2')
+        ];
+    
+        // Create death animation sprite
+        this.deathSprite = new AnimatedSprite(this.deathTextures);
+        this.deathSprite.anchor.set(0.5);
+        this.deathSprite.animationSpeed = 0.1;
+        this.deathSprite.loop = false;
+        this.deathSprite.visible = false;
+        this.sprite.addChild(this.deathSprite);
+
         // Set up walking animations
         for (const direction in this.walkingSprites) {
             const sprite = this.walkingSprites[direction];
@@ -79,29 +94,31 @@ export class Player {
     }
 
     takeDamage(damage = 1) {
+        if (this.isDead) return; // Prevent taking damage if player is dead
+    
         this.hp -= damage;
         console.log(`Player HP: ${this.hp}`);
         if (this.hp <= 0) {
             console.log('Game Over!');
-            this.hp = 3; // Reset for testing purposes
+            this.playDeathAnimation();
         }
     }
 
     setupControls() {
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'ArrowUp') this.keys.up = true;
-            if (e.code === 'ArrowDown') this.keys.down = true;
-            if (e.code === 'ArrowLeft') this.keys.left = true;
-            if (e.code === 'ArrowRight') this.keys.right = true;
+            if (e.code === 'KeyW') this.keys.up = true;
+            if (e.code === 'KeyS') this.keys.down = true;
+            if (e.code === 'KeyA') this.keys.left = true;
+            if (e.code === 'KeyD') this.keys.right = true;
             if (e.code === 'Space') this.keys.shoot = true;
             if (e.code === 'KeyR') this.keys.reload = true;
         });
-
+    
         window.addEventListener('keyup', (e) => {
-            if (e.code === 'ArrowUp') this.keys.up = false;
-            if (e.code === 'ArrowDown') this.keys.down = false;
-            if (e.code === 'ArrowLeft') this.keys.left = false;
-            if (e.code === 'ArrowRight') this.keys.right = false;
+            if (e.code === 'KeyW') this.keys.up = false;
+            if (e.code === 'KeyS') this.keys.down = false;
+            if (e.code === 'KeyA') this.keys.left = false;
+            if (e.code === 'KeyD') this.keys.right = false;
             if (e.code === 'Space') this.keys.shoot = false;
             if (e.code === 'KeyR') this.keys.reload = false;
         });
@@ -118,7 +135,7 @@ export class Player {
             setTimeout(() => {
                 const direction = this.gun.rotation + (Math.random() - 0.5) * spreadAngle;
                 const spawnPoint = { x: this.sprite.x + this.gun.x, y: this.sprite.y + this.gun.y };
-                const bullet = new Bullet('player', direction, 5, spawnPoint, 1);
+                const bullet = new Bullet('player', direction, 5, spawnPoint, 1, this.damage); // Pass damage value
                 bullet.bullets.forEach(b => this.app.stage.addChild(b));
                 this.bullets.push(bullet);
             }, i * shotDelay);
@@ -128,6 +145,7 @@ export class Player {
         this.gun.textures = this.rechamberAnimation; // Ensure the textures are set for the animation
         this.gun.gotoAndPlay(0); // Play firing animation
     }
+
 
     reload() {
         if (!this.isReloading && this.currentShells < this.MAX_SHELLS) {
@@ -211,6 +229,32 @@ export class Player {
         }, 1000); // Keep shells visible for 1 second after reload
     }
 
+    playDeathAnimation() {
+        // Disable player movement
+        this.keys.up = false;
+        this.keys.down = false;
+        this.keys.left = false;
+        this.keys.right = false;
+        this.keys.shoot = false;
+        this.keys.reload = false;
+    
+        // Set isDead flag to true
+        this.isDead = true;
+    
+        // Hide other sprites
+        this.idleSprite.visible = false;
+        for (const direction in this.walkingSprites) {
+            this.walkingSprites[direction].visible = false;
+            this.walkingSprites[direction].stop();
+        }
+    
+        // Play death animation
+        this.deathSprite.visible = true;
+        this.deathSprite.gotoAndPlay(0);
+    
+    }
+    
+
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
         const dy = targetCircle.y - this.sprite.y;
@@ -240,8 +284,10 @@ export class Player {
     }
 
     update(targetCircle) {
+        if (this.isDead) return; // Prevent update if player is dead
+    
         let isMoving = false;
-
+    
         // Update player position based on key inputs
         if (this.keys.up) {
             this.sprite.y -= this.speed;
@@ -259,25 +305,25 @@ export class Player {
             this.sprite.x += this.speed;
             isMoving = true;
         }
-
+    
         // Ensure player stays within screen bounds
         this.sprite.x = Math.max(0, Math.min(this.sprite.x, this.app.screen.width));
         this.sprite.y = Math.max(0, Math.min(this.sprite.y, this.app.screen.height));
-
+    
         // Handle shooting
         if (this.keys.shoot && Date.now() - this.lastShotTime >= this.shotCooldown) {
             this.shootShotgun();
             this.lastShotTime = Date.now();
         }
-
+    
         // Handle reloading
         if (this.keys.reload) {
             this.reload();
         }
-
+    
         // Update gun rotation
         this.updateGunRotation(targetCircle);
-
+    
         // Switch between idle and walking animations
         if (isMoving) {
             this.idleSprite.visible = false;
@@ -307,13 +353,13 @@ export class Player {
                 this.walkingSprites[direction].stop();
             }
         }
-
+    
         // Update bullets
         this.bullets.forEach(bullet => {
             bullet.update();
             bullet.checkCollision(this.app.enemyManager.enemies); // Check for collisions with enemies
         });
-
+    
         // Remove bullets that are out of bounds
         for (let i = this.bullets.length - 1; i >= 0; i--) {
             const bullet = this.bullets[i];

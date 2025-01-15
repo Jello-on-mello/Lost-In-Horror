@@ -1,10 +1,11 @@
 import { Graphics } from 'pixi.js';
 
 export class Bullet {
-    constructor(faction, direction, speed, spawnPoint, numBullets) {
+    constructor(faction, direction, speed, spawnPoint, numBullets, damage) {
         this.faction = faction;
         this.direction = direction;
         this.speed = speed;
+        this.damage = damage; // Add damage property
         this.bullets = [];
 
         for (let i = 0; i < numBullets; i++) {
@@ -39,7 +40,7 @@ export class Bullet {
                 if (!enemy || enemy.isDead || !enemy.sprite || enemy.sprite._destroyed) return;
     
                 if (this.isColliding(bullet, enemy.sprite)) {
-                    enemy.takeDamage();
+                    enemy.takeDamage(this.damage); // Use bullet's damage value
                     bullet.destroy();
                     bulletsToRemove.push(bulletIndex);
                 }

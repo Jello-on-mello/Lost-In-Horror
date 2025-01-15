@@ -58,9 +58,13 @@ class DevCheats {
 
         window.killAllEnemies = () => {
             if (!this.cheatsEnabled) return console.log('DevCheats are not enabled.');
-            this.enemyManager.enemies.forEach(e => e.takeDamage(999999));
+            this.enemyManager.enemies.forEach(e => {
+                console.log(`Enemy HP before: ${e.hp}`);
+                e.takeDamage(999999);
+                console.log(`Enemy HP after: ${e.hp}`);
+            });
             console.log('All enemies killed.');
-        };
+        }
     
         window.godMode = (enable) => {
             if (!this.cheatsEnabled) return console.log('DevCheats are not enabled.');
