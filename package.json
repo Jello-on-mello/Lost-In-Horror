@@ -16,9 +16,6 @@
     "url": "https://github.com/Jello-on-mello/Lost-In-Horror/issues"
   },
   "homepage": "https://github.com/Jello-on-mello/Lost-In-Horror#readme",
-  "devDependencies": {
-    "vite": "^6.0.7"
-  },
   "dependencies": {
     "pixi.js": "^8.6.2"
   }
