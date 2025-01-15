@@ -1,5 +1,5 @@
 import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'pixi.js';
-import { Bullet } from './bullet.js';
+import { Bullet } from '../Manager/BulletManager.js';
 
 export class Player {
     constructor(app, playerTexture, gunTexture, rechamberAnimation, textureManager) {

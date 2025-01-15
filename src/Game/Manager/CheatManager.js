@@ -1,8 +1,8 @@
-import { Player } from './player.js';
-import { MapManager } from './mapManager.js';
-import { Slime } from './Enemies/Slime.js';
+import { Player } from '../Player/Player.js';
+import { MapManager } from './MapManager.js';
+import { Slime } from '../Enemy/Slime.js';
 
-class DevCheats {
+class CheatManager {
     constructor(player, mapManager, enemyManager) {
         this.player = player;
         this.mapManager = mapManager;
@@ -99,4 +99,4 @@ class DevCheats {
     }
 }
 
-export default DevCheats;
+export default CheatManager;

@@ -1,5 +1,5 @@
 import { Container, TilingSprite , Graphics,Sprite } from 'pixi.js';
-import { EnemyManager } from './enemymanager.js';
+import { EnemyManager } from './EnemyManager.js';
 
 export class MapManager {
     constructor(app, player, textureManager, enemyManager) {

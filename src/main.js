@@ -1,10 +1,12 @@
 import { Application } from 'pixi.js';
-import { Player } from './player.js';
-import { MapManager } from './mapManager.js';
-import { TextureManager } from './textureManager.js';
-import { createCrosshair } from './crosshair.js';
-import DevCheats from './devCheats.js';
-import { EnemyManager } from './enemymanager.js';
+import { MapManager } from './Game/Manager/MapManager.js';
+import { EnemyManager } from './Game/Manager/EnemyManager.js';
+import CheatManager from './Game/Manager/CheatManager.js';
+import { TextureManager } from './Game/Manager/textureManager.js';
+import { Player } from './Game/Player/Player.js';
+import { createCrosshair } from './Game/Player/crosshair.js';
+
+
 
 (async () => {
     // Ensure the canvas element exists
@@ -72,8 +74,8 @@ import { EnemyManager } from './enemymanager.js';
     app.stage.addChild(player.sprite);           // Player on top
     app.stage.addChild(crosshair);               // UI element on top
 
-    // Initialize DevCheats
-    new DevCheats(player, mapManager, enemyManager);
+    // Initialize CheatManager
+    new CheatManager(player, mapManager, enemyManager);
 
     // Make enemyManager accessible from the player
     app.enemyManager = enemyManager;

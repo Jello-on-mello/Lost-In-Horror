@@ -1,4 +1,4 @@
-import { Slime } from './Enemies/Slime';
+import { Slime } from '../Enemy/Slime.js';
 
 export class EnemyManager {
     constructor(app, player, mapManager) {
