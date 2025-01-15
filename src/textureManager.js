@@ -48,10 +48,6 @@ export class TextureManager {
             await Assets.load('./src/Sprites/Player/Player Moving Side 4.png')
         ];
 
-        // Load death animation textures
-        this.textures['PlayerDeath1'] = await Assets.load('./src/Sprites/Player/Player Death 1.png');
-        this.textures['PlayerDeath2'] = await Assets.load('./src/Sprites/Player/Player Death 2.png');
-
         RechamberAnimation.forEach((path, index) => {
             this.textures[`RechamberAnimation${index}`] = Assets.get(path);
         });

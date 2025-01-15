@@ -73,8 +73,7 @@ import { EnemyManager } from './enemymanager.js';
     app.stage.addChild(crosshair);               // UI element on top
 
     // Initialize DevCheats
-    const devCheats = new DevCheats(player, mapManager, enemyManager);
-    mapManager.devCheats = devCheats; // Make DevCheats accessible from MapManager
+    new DevCheats(player, mapManager, enemyManager);
 
     // Make enemyManager accessible from the player
     app.enemyManager = enemyManager;

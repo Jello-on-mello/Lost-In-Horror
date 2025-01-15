@@ -11,11 +11,6 @@ export class EnemyManager {
     }
 
     spawnEnemiesForRoom(room) {
-        if (this.mapManager.devCheats && this.mapManager.devCheats.disableEnemySpawning) {
-            console.log('Enemy spawning is disabled.');
-            return;
-        }
-
         console.log(`Spawning enemies for room: ${room.type}`); // Debugging information
     
         if (room.type === 'spawnRoom' || room.type === 'shopRoom' || this.clearedRooms.has(room.id)) return;
