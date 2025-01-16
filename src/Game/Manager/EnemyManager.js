@@ -1,10 +1,11 @@
 import { Slime } from '../Enemy/Slime.js';
 
 export class EnemyManager {
-    constructor(app, player, mapManager) {
+    constructor(app, player, mapManager, textureManager) {
         this.app = app;
         this.player = player;
         this.mapManager = mapManager;
+        this.textureManager = textureManager;
         this.enemies = [];
         this.cooldownSet = false; // Add a flag to track cooldown state
         this.clearedRooms = new Set(); // Track cleared rooms
@@ -28,7 +29,7 @@ export class EnemyManager {
         const roomSize = this.mapManager.roomSize; // Get the room size from MapManager
     
         if (room.type === 'bossRoom') {
-            const boss = new enemyClass[0](this.app, this.player, room, roomSize, 3, 2); // Example speed and damage
+            const boss = new enemyClass[0](this.app, this.player, room, roomSize, this.textureManager, 3, 2); // Example speed and damage
             this.enemies.push(boss);
             this.app.stage.addChild(boss.sprite);
             console.log(`Spawned boss: ${boss.constructor.name} at (${boss.sprite.x}, ${boss.sprite.y})`); // Debugging information
@@ -36,7 +37,7 @@ export class EnemyManager {
             const numEnemies = Math.floor(Math.random() * 5) + 3; // Random number of enemies between 3 and 7
             for (let i = 0; i < numEnemies; i++) {
                 const randomIndex = Math.floor(Math.random() * enemyClass.length);
-                const enemy = new enemyClass[randomIndex](this.app, this.player, room, roomSize, 2, 1); // Example speed and damage
+                const enemy = new enemyClass[randomIndex](this.app, this.player, room, roomSize, this.textureManager, 2, 1); // Example speed and damage
                 this.enemies.push(enemy);
                 this.app.stage.addChild(enemy.sprite);
                 console.log(`Spawned enemy: ${enemy.constructor.name} at (${enemy.sprite.x}, ${enemy.sprite.y})`); // Debugging information

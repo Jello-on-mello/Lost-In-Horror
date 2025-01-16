@@ -1,7 +1,7 @@
-import { Graphics } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
+import { AnimatedSprite } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 
 export class Slime {
-    constructor(app, player, room, roomSize, speed = 2, damage = 1) {
+    constructor(app, player, room, roomSize, textureManager, speed = 2, damage = 1) {
         this.app = app;
         this.player = player;
         this.room = room;
@@ -9,11 +9,31 @@ export class Slime {
         this.isDead = false;
         this.speed = speed;
         this.damage = damage;
+        this.textureManager = textureManager;
 
-        this.sprite = new Graphics();
-        this.sprite.beginFill(0x00ff00);
-        this.sprite.drawRect(-15, -15, 30, 30);
-        this.sprite.endFill();
+        // Load textures and handle errors
+        try {
+            this.textures = {
+                idle: this.textureManager.getTexture('SlimeIdle'),
+                walkUp: this.textureManager.getTexture('SlimeWalkUp'),
+                walkDown: this.textureManager.getTexture('SlimeWalkDown'),
+                walkSide: this.textureManager.getTexture('SlimeWalkSide')
+            };
+        } catch (error) {
+            console.error('Error loading textures:', error);
+            throw error;
+        }
+
+        // Ensure all textures are loaded
+        if (!this.textures.idle || !this.textures.walkUp || !this.textures.walkDown || !this.textures.walkSide) {
+            throw new Error('One or more textures are not loaded correctly');
+        }
+
+        this.sprite = new AnimatedSprite(this.textures.idle);
+        this.sprite.anchor.set(0.5);
+        this.sprite.animationSpeed = 0.1;
+        this.sprite.scale.set(0.25); // Scale down the sprite to 50% of its original size
+        this.sprite.play();
 
         // Ensure the enemy spawns at a safe distance from the player
         let spawnX, spawnY, distance;
@@ -45,6 +65,15 @@ export class Slime {
         this.sprite.x += (dx / distance) * this.speed;
         this.sprite.y += (dy / distance) * this.speed;
 
+        // Update animation based on movement direction
+        if (Math.abs(dx) > Math.abs(dy)) {
+            this.sprite.textures = this.textures.walkSide;
+            this.sprite.scale.x = dx > 0 ? 0.25 : -0.25; // Flip sprite based on direction and scale down
+        } else {
+            this.sprite.textures = dy > 0 ? this.textures.walkDown : this.textures.walkUp;
+        }
+        this.sprite.play();
+
         // Check for collisions with other enemies
         enemies.forEach(enemy => {
             if (enemy !== this && !enemy.isDead) {
@@ -63,7 +92,7 @@ export class Slime {
         });
     }
 
-    takeDamage(damage = 1) {
+    takeDamage(damage) {
         this.hp -= damage;
         if (this.hp <= 0) {
             this.isDead = true;

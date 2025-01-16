@@ -6,8 +6,6 @@ import { TextureManager } from './Game/Manager/textureManager.js';
 import { Player } from './Game/Player/Player.js';
 import { createCrosshair } from './Game/Player/crosshair.js';
 
-
-
 (async () => {
     // Ensure the canvas element exists
     const Monitor = document.getElementById('myCanvas');
@@ -39,7 +37,7 @@ import { createCrosshair } from './Game/Player/crosshair.js';
     await textureManager.loadTextures();
 
     // Initialize EnemyManager
-    const enemyManager = new EnemyManager(app, null, null); // Pass null for player and mapManager initially
+    const enemyManager = new EnemyManager(app, null, null, textureManager); // Pass null for player and mapManager initially
 
     // Initialize MapManager without loading the current room
     const mapManager = new MapManager(app, null, textureManager, enemyManager);
