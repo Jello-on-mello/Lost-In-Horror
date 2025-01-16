@@ -1,10 +1,11 @@
-import { Application } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
+import { Application , Sprite} from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 import { MapManager } from './Game/Manager/MapManager.js';
 import { EnemyManager } from './Game/Manager/EnemyManager.js';
 import CheatManager from './Game/Manager/CheatManager.js';
 import { TextureManager } from './Game/Manager/textureManager.js';
 import { Player } from './Game/Player/Player.js';
 import { createCrosshair } from './Game/Player/crosshair.js';
+import { LoadingScreen } from './Game/UI/LoadingScreen.js';
 
 (async () => {
     // Ensure the canvas element exists
@@ -34,7 +35,19 @@ import { createCrosshair } from './Game/Player/crosshair.js';
 
     // Initialize TextureManager and load textures
     const textureManager = new TextureManager('./src/Sprites/Grass/GRASS+_Spritesheet.png');
-    await textureManager.loadTextures();
+    
+    // Initialize LoadingScreen
+    const loadingScreen = new LoadingScreen(app, textureManager);
+
+    // Load textures with progress update
+    await textureManager.loadTextures((progress, texture) => {
+        loadingScreen.updateProgress(progress);
+        if (texture) {
+            const sprite = new Sprite(texture);
+            sprite.anchor.set(0.5);
+            loadingScreen.addLoadedSprite(sprite);
+        }
+    });
 
     // Initialize EnemyManager
     const enemyManager = new EnemyManager(app, null, null, textureManager); // Pass null for player and mapManager initially
@@ -78,10 +91,14 @@ import { createCrosshair } from './Game/Player/crosshair.js';
     // Make enemyManager accessible from the player
     app.enemyManager = enemyManager;
 
+    // Hide the loading screen once the room is loaded
+    loadingScreen.hide();
+
     // Main game loop
-    app.ticker.add(() => {
+    app.ticker.add((delta) => {
         mapManager.update();
         player.update(crosshair);
         enemyManager.update();
+        loadingScreen.update(delta);
     });
 })();
