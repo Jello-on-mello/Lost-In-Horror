@@ -1,4 +1,4 @@
-import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'pixi.js';
+import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 import { Bullet } from '../Manager/BulletManager.js';
 
 export class Player {

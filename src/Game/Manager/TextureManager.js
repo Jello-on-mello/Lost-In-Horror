@@ -1,4 +1,4 @@
-import { Assets, Texture, Rectangle } from 'pixi.js';
+import { Assets, Texture, Rectangle } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 
 export class TextureManager {
     constructor(spriteSheetPath) {

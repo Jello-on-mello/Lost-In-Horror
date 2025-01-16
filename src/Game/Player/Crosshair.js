@@ -1,4 +1,4 @@
-import { Graphics } from 'pixi.js';
+import { Graphics } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 
 export function createCrosshair() {
     const crosshair = new Graphics();

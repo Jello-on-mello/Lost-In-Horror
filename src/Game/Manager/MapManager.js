@@ -1,4 +1,4 @@
-import { Container, TilingSprite , Graphics,Sprite } from 'pixi.js';
+import { Container, TilingSprite , Graphics,Sprite } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 import { EnemyManager } from './EnemyManager.js';
 
 export class MapManager {
@@ -241,17 +241,17 @@ export class MapManager {
             3: ["tile187", "tile188", "tile189","tile198", "tile199", "tile200", "tile201","tile203", "tile204", "tile205"],
             4: ["tile210", "tile211", "tile212", "tile213", "tile214", "tile215"]
         };
-
+    
         const tiles = decorationTiles[this.currentFloor] || [];
-        const numDecorations = Math.floor(Math.random() * 10) + 5;
-
+        const numDecorations = Math.floor(Math.random() * 15); // Increase the number of decorations
+    
         for (let i = 0; i < numDecorations; i++) {
             const tile = tiles[Math.floor(Math.random() * tiles.length)];
-            const x = Math.floor(Math.random() * this.roomSize.width);
-            const y = Math.floor(Math.random() * this.roomSize.height);
+            const x = Math.floor(Math.random() * (this.roomSize.width - 30)) + 15; // Ensure decoration is within room boundaries
+            const y = Math.floor(Math.random() * (this.roomSize.height - 30)) + 15; // Ensure decoration is within room boundaries
             decorations.push({ tile, x, y });
         }
-
+    
         return decorations;
     }
 

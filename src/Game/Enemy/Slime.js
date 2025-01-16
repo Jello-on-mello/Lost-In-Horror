@@ -1,4 +1,4 @@
-import { Graphics } from 'pixi.js';
+import { Graphics } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 
 export class Slime {
     constructor(app, player, room, roomSize, speed = 2, damage = 1) {
