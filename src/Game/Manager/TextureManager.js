@@ -1,4 +1,4 @@
-import { Assets , Sprite } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
+import { Assets } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 
 export class TextureManager {
     constructor(spriteSheetPath) {
@@ -19,8 +19,9 @@ export class TextureManager {
         // Load individual grass textures
         for (let i = 0; i <= 222; i++) {
             const textureName = `tile${i.toString().padStart(3, '0')}`;
-            this.textures[textureName] = await Assets.load(`./src/Sprites/Tiles/${textureName}.png`);
-            updateProgress(this.textures[textureName]);
+            const texture = await Assets.load(`./src/Sprites/Tiles/${textureName}.png`);
+            this.textures[textureName] = texture;
+            updateProgress(texture);
         }
 
         // Load additional textures for player gun and animations
@@ -32,64 +33,92 @@ export class TextureManager {
             './src/Sprites/Gun/TOZ-106_Fired_4.png'
         ];
 
-        await Assets.load(RechamberAnimation);
-        RechamberAnimation.forEach((path, index) => {
-            this.textures[`RechamberAnimation${index}`] = Assets.get(path);
-            updateProgress(this.textures[`RechamberAnimation${index}`]);
-        });
+        for (const path of RechamberAnimation) {
+            const texture = await Assets.load(path);
+            const index = RechamberAnimation.indexOf(path);
+            this.textures[`RechamberAnimation${index}`] = texture;
+            updateProgress(texture);
+        }
 
-        this.textures['GunTexture'] = await Assets.load('./src/Sprites/Gun/TOZ-106.png');
-        updateProgress(this.textures['GunTexture']);
-        this.textures['PlayerTexture'] = await Assets.load('./src/Sprites/Player/Player Idle Front.png');
-        updateProgress(this.textures['PlayerTexture']);
-        this.textures['PlayerIdleUp'] = await Assets.load('./src/Sprites/Player/Player Idle Back.png');
-        updateProgress(this.textures['PlayerIdleUp']);
-        this.textures['PlayerIdleSide'] = await Assets.load('./src/Sprites/Player/Player Idle Side.png');
-        updateProgress(this.textures['PlayerIdleSide']);
-        this.textures['PlayerIdleDown'] = await Assets.load('./src/Sprites/Player/Player Idle Front.png');
-        updateProgress(this.textures['PlayerIdleDown']);
+        const gunTexture = await Assets.load('./src/Sprites/Gun/TOZ-106.png');
+        this.textures['GunTexture'] = gunTexture;
+        updateProgress(gunTexture);
+
+        const playerTexture = await Assets.load('./src/Sprites/Player/Player Idle Front.png');
+        this.textures['PlayerTexture'] = playerTexture;
+        updateProgress(playerTexture);
+
+        const playerIdleUp = await Assets.load('./src/Sprites/Player/Player Idle Back.png');
+        this.textures['PlayerIdleUp'] = playerIdleUp;
+        updateProgress(playerIdleUp);
+
+        const playerIdleSide = await Assets.load('./src/Sprites/Player/Player Idle Side.png');
+        this.textures['PlayerIdleSide'] = playerIdleSide;
+        updateProgress(playerIdleSide);
+
+        const playerIdleDown = await Assets.load('./src/Sprites/Player/Player Idle Front.png');
+        this.textures['PlayerIdleDown'] = playerIdleDown;
+        updateProgress(playerIdleDown);
 
         // Load walking animations
-        this.textures['PlayerWalkDown'] = [
+        const playerWalkDown = [
             await Assets.load('./src/Sprites/Player/Player Moving Front 1.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Front 2.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Front 3.png')
         ];
-        this.textures['PlayerWalkDown'].forEach(texture => updateProgress(texture));
-        this.textures['PlayerWalkUp'] = [
+        this.textures['PlayerWalkDown'] = playerWalkDown;
+        playerWalkDown.forEach(texture => updateProgress(texture));
+
+        const playerWalkUp = [
             await Assets.load('./src/Sprites/Player/Player Moving Back 1.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Back 2.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Back 3.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Back 4.png')
         ];
-        this.textures['PlayerWalkUp'].forEach(texture => updateProgress(texture));
-        this.textures['PlayerWalkSide'] = [
+        this.textures['PlayerWalkUp'] = playerWalkUp;
+        playerWalkUp.forEach(texture => updateProgress(texture));
+
+        const playerWalkSide = [
             await Assets.load('./src/Sprites/Player/Player Moving Side 1.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Side 2.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Side 3.png')
         ];
-        this.textures['PlayerWalkSide'].forEach(texture => updateProgress(texture));
+        this.textures['PlayerWalkSide'] = playerWalkSide;
+        playerWalkSide.forEach(texture => updateProgress(texture));
 
         // Load Slime textures
-        this.textures['SlimeIdle'] = [await Assets.load('./src/Sprites/Slime/SlimeIdle.png')];
-        updateProgress(this.textures['SlimeIdle'][0]);
-        this.textures['SlimeWalkUp'] = [];
-        this.textures['SlimeWalkDown'] = [];
-        this.textures['SlimeWalkSide'] = [];
+        const slimeIdle = await Assets.load('./src/Sprites/Slime/SlimeIdle.png');
+        this.textures['SlimeIdle'] = [slimeIdle];
+        updateProgress(slimeIdle);
+
+        const slimeWalkUp = [];
+        const slimeWalkDown = [];
+        const slimeWalkSide = [];
         for (let i = 1; i <= 12; i++) {
-            this.textures['SlimeWalkUp'].push(await Assets.load(`./src/Sprites/Slime/SlimeMovingUp (${i}).png`));
-            updateProgress(this.textures['SlimeWalkUp'][i - 1]);
-            this.textures['SlimeWalkDown'].push(await Assets.load(`./src/Sprites/Slime/SlimeMovingDown (${i}).png`));
-            updateProgress(this.textures['SlimeWalkDown'][i - 1]);
-            this.textures['SlimeWalkSide'].push(await Assets.load(`./src/Sprites/Slime/SlimeMovingSide (${i}).png`));
-            updateProgress(this.textures['SlimeWalkSide'][i - 1]);
+            const walkUp = await Assets.load(`./src/Sprites/Slime/SlimeMovingUp (${i}).png`);
+            slimeWalkUp.push(walkUp);
+            updateProgress(walkUp);
+
+            const walkDown = await Assets.load(`./src/Sprites/Slime/SlimeMovingDown (${i}).png`);
+            slimeWalkDown.push(walkDown);
+            updateProgress(walkDown);
+
+            const walkSide = await Assets.load(`./src/Sprites/Slime/SlimeMovingSide (${i}).png`);
+            slimeWalkSide.push(walkSide);
+            updateProgress(walkSide);
         }
+        this.textures['SlimeWalkUp'] = slimeWalkUp;
+        this.textures['SlimeWalkDown'] = slimeWalkDown;
+        this.textures['SlimeWalkSide'] = slimeWalkSide;
 
         // Load death animation textures
-        this.textures['PlayerDeath1'] = await Assets.load('./src/Sprites/Player/Player Death 1.png');
-        updateProgress(this.textures['PlayerDeath1']);
-        this.textures['PlayerDeath2'] = await Assets.load('./src/Sprites/Player/Player Death 2.png');
-        updateProgress(this.textures['PlayerDeath2']);
+        const playerDeath1 = await Assets.load('./src/Sprites/Player/Player Death 1.png');
+        this.textures['PlayerDeath1'] = playerDeath1;
+        updateProgress(playerDeath1);
+
+        const playerDeath2 = await Assets.load('./src/Sprites/Player/Player Death 2.png');
+        this.textures['PlayerDeath2'] = playerDeath2;
+        updateProgress(playerDeath2);
     }
 
     getTexture(name) {

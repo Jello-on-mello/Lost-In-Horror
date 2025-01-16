@@ -339,7 +339,27 @@ export class Player {
         // Play death animation
         this.deathSprite.visible = true;
         this.deathSprite.gotoAndPlay(0);
+
+        setTimeout(() => {
+            // Reset player state
+            this.reset();
+            
+            // Reset enemies
+            if (this.app.enemyManager) {
+                this.app.enemyManager.despawnEnemies();
+            }
+    
+            // Reset map to floor 1 and spawn room
+            if (this.app.mapManager) {
+                this.app.mapManager.currentFloor = 1;
+                this.app.mapManager.generateMap();
+                if (this.app.mapManager.spawnRoom) {
+                    this.app.mapManager.loadCurrentRoom(this.app.mapManager.spawnRoom);
+                }
+            }
+        }, 2000); // Wait 2 seconds before reset
     }
+    
     
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
@@ -465,6 +485,25 @@ export class Player {
             }
         }
     }
+
+    reset() {
+        this.isDead = false;
+        this.hp = 3;
+        this.currentShells = 4;
+        this.isReloading = false;
+        this.sprite.x = this.app.screen.width / 2;
+        this.sprite.y = this.app.screen.height / 2;
+        
+        // Reset visuals
+        this.idleSprite.visible = true;
+        this.deathSprite.visible = false;
+        for (const direction in this.walkingSprites) {
+            this.walkingSprites[direction].visible = false;
+            this.walkingSprites[direction].stop();
+        }
+        this.despawnBullets();
+    }
+    
 
     despawnBullets() {
         this.bullets.forEach(bullet => bullet.despawn());

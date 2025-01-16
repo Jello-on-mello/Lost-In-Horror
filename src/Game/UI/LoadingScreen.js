@@ -6,14 +6,25 @@ export class LoadingScreen {
         this.textureManager = textureManager;
         this.container = new Container();
         this.progressBar = new Graphics();
-        this.spiralContainer = new Container();
-        this.playerSprite = new Sprite();
+        this.spriteContainer = new Container(); // Renamed from spiralContainer
         this.loadedSprites = [];
         this.loadingText = new Text('Loading Game...', new TextStyle({
             fontFamily: 'Arial',
             fontSize: 50,
             fill: '#ffffff'
         }));
+
+        // Grid configuration
+        this.gridConfig = {
+            cols: 12,          // Increased columns
+            rows: 12   ,          // Increased rows
+            cellSize: 60,      // Slightly smaller cells
+            offsetX: 10,       // Adjusted offset
+            offsetY: 10,       // More space from top
+            layerOffset: 5,    // Y-offset between stacked sprites
+            maxAlpha: 0.8,     // Maximum opacity for base layer
+            alphaDecay: 0.2    // How much to reduce alpha per layer
+        };
 
         this.init();
     }
@@ -26,20 +37,16 @@ export class LoadingScreen {
         background.endFill();
         this.container.addChild(background);
 
+        // Add sprite container before progress bar and text
+        this.spriteContainer.x = 0;
+        this.spriteContainer.y = 0;
+        this.container.addChild(this.spriteContainer);
+
         // Create a progress bar
         this.progressBar.beginFill(0xffffff);
         this.progressBar.drawRect(0, this.app.screen.height - 50, 0, 20);
         this.progressBar.endFill();
         this.container.addChild(this.progressBar);
-
-        // Create a spinning spiral
-        this.spiralContainer.x = this.app.screen.width / 2;
-        this.spiralContainer.y = this.app.screen.height / 2;
-        this.container.addChild(this.spiralContainer);
-
-        // Create a player sprite
-        this.playerSprite.anchor.set(0.5);
-        this.spiralContainer.addChild(this.playerSprite);
 
         // Add loading text
         this.loadingText.anchor.set(0.5);
@@ -59,25 +66,43 @@ export class LoadingScreen {
     }
 
     addLoadedSprite(sprite) {
+        const spritesCount = this.loadedSprites.length;
+        const baseRow = Math.floor(spritesCount / this.gridConfig.cols);
+        const col = spritesCount % this.gridConfig.cols;
+        const layer = Math.floor(baseRow / this.gridConfig.rows);
+        const row = baseRow % this.gridConfig.rows;
+
+        sprite.anchor.set(0.5);
+        sprite.scale.set(0.4); // Slightly smaller sprites
+            
+        // Calculate base position
+        sprite.x = col * this.gridConfig.cellSize + this.gridConfig.cellSize / 2 + this.gridConfig.offsetX;
+        sprite.y = row * this.gridConfig.cellSize + this.gridConfig.cellSize / 2 + this.gridConfig.offsetY;
+            
+        // Add layer offset if stacking
+        if (layer > 0) {
+            sprite.y -= layer * this.gridConfig.layerOffset;
+            // Reduce alpha for stacked sprites
+            sprite.alpha = Math.max(
+                this.gridConfig.maxAlpha - (layer * this.gridConfig.alphaDecay),
+                0.2
+            );
+        } else {
+            sprite.alpha = this.gridConfig.maxAlpha;
+        }
+            
+        // Add a slight random rotation
+        sprite.rotation = (Math.random() - 0.5) * 0.3;
+            
         this.loadedSprites.push(sprite);
-        this.spiralContainer.addChild(sprite);
+        this.spriteContainer.addChild(sprite);
     }
 
     update(delta) {
-        // Rotate the spiral container
-        this.spiralContainer.rotation += 0.05 * delta;
-
-        // Position loaded sprites in a spiral pattern
-        const angleStep = (Math.PI * 2) / this.loadedSprites.length;
-        this.loadedSprites.forEach((sprite, index) => {
-            const angle = index * angleStep;
-            const radius = 50 + index * 10;
-            sprite.x = Math.cos(angle) * radius;
-            sprite.y = Math.sin(angle) * radius;
+        // Optional: Add subtle animation to the sprites
+        this.loadedSprites.forEach(sprite => {
+            sprite.rotation += 0.001 * delta;
         });
-
-        // Rotate the player sprite
-        this.playerSprite.rotation += 0.1 * delta;
     }
 
     hide() {

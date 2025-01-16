@@ -1,4 +1,4 @@
-import { Application , Sprite} from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
+import { Application, Sprite } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 import { MapManager } from './Game/Manager/MapManager.js';
 import { EnemyManager } from './Game/Manager/EnemyManager.js';
 import CheatManager from './Game/Manager/CheatManager.js';
@@ -54,6 +54,9 @@ import { LoadingScreen } from './Game/UI/LoadingScreen.js';
 
     // Initialize MapManager without loading the current room
     const mapManager = new MapManager(app, null, textureManager, enemyManager);
+
+    // Add mapManager to app
+    app.mapManager = mapManager;
 
     // Set the mapManager in enemyManager
     enemyManager.mapManager = mapManager;
