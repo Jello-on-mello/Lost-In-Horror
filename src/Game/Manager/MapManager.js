@@ -8,6 +8,7 @@ export class MapManager {
         this.textureManager = textureManager;
         this.enemyManager = enemyManager; // Assign enemyManager
         this.rooms = [];
+        this.doors = [];
         this.currentRoom = null;
         this.roomSize = { width: 750, height: 750 };
         this.roomContainer = new Container();
@@ -305,12 +306,20 @@ export class MapManager {
     }
 
     drawRoomConnections() {
+        // Clear existing doors
+        this.doors.forEach(door => door.destroy());
+        this.doors = [];
+    
+        if (this.enemyManager.enemies.length > 0) {
+            return; // Do not draw doors if there are enemies
+        }
+    
         for (const direction in this.currentRoom.connections) {
             if (!this.currentRoom.connections[direction]) continue;
-
+    
             const door = new Graphics();
             door.beginFill(0xaaaaaa);
-
+    
             switch (direction) {
                 case 'north':
                     door.drawRect(
@@ -345,7 +354,7 @@ export class MapManager {
                     );
                     break;
             }
-
+    
             const connectedRoom = this.currentRoom.connections[direction];
             if (connectedRoom) {
                 switch (connectedRoom.type) {
@@ -363,15 +372,16 @@ export class MapManager {
                         break;
                 }
             }
-
+    
             door.interactive = true;
             door.buttonMode = true;
             door.on('pointerdown', () => this.moveToRoom(direction));
             door.endFill();
-
+    
             this.roomContainer.addChild(door);
+            this.doors.push(door); // Store the door reference
         }
-
+    
         if (this.currentRoom.type === 'bossRoom' && this.currentFloor < this.maxFloors) {
             const nextFloorDoor = new Graphics();
             nextFloorDoor.beginFill(0xff0000);
@@ -386,6 +396,7 @@ export class MapManager {
             nextFloorDoor.buttonMode = true;
             nextFloorDoor.on('pointerdown', () => this.moveToNextFloor());
             this.roomContainer.addChild(nextFloorDoor);
+            this.doors.push(nextFloorDoor); // Store the door reference
         }
     }
 
@@ -441,29 +452,38 @@ export class MapManager {
             console.error("No current room loaded.");
             return;
         }
-
+    
         if (this.doorCooldown) {
             return;
         }
-
+    
         for (const direction in this.currentRoom.connections) {
             const doorBounds = this.getDoorBounds(direction);
-
+    
             if (!doorBounds) {
                 console.error(`Invalid door bounds for direction: ${direction}`);
                 continue;
             }
-
+    
             if (this.isPlayerTouchingDoor(doorBounds)) {
                 this.moveToRoom(direction);
                 break;
             }
         }
-
+    
         // Check if the player is touching the next floor door
         const nextFloorDoorBounds = this.getNextFloorDoorBounds();
         if (nextFloorDoorBounds && this.isPlayerTouchingDoor(nextFloorDoorBounds)) {
             this.moveToNextFloor();
+        }
+    
+        // Redraw room connections if all enemies are killed
+        if (this.enemyManager.enemies.length === 0) {
+            this.drawRoomConnections();
+        } else {
+            // Remove doors if enemies are present
+            this.doors.forEach(door => door.destroy());
+            this.doors = [];
         }
     }
 

@@ -18,6 +18,14 @@ export class Player {
         this.speed = 2.5;
         this.hp = 3;
         this.damage = 1;
+        this.isDodging = false;
+        this.invincible = false;
+
+        this.dodgeDuration = 50; // Duration of the dodge in milliseconds
+        this.dodgeSpeed = 10; // Speed during dodge
+        this.dodgeCooldown = 1500; // Cooldown period after dodge in milliseconds
+        this.dodgeTrail = [];
+        this.lastDodgeTime = 0;
 
         // Gun animation setup
         this.gun = new AnimatedSprite(rechamberAnimation);
@@ -40,7 +48,7 @@ export class Player {
         this.isReloading = false;
         this.shotCooldown = 500;
         this.lastShotTime = 0;
-        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false };
+        this.keys = { up: false, down: false, left: false, right: false, shoot: false, reload: false ,dodge: false};
 
         // Reload animation
         this.reloadAnimationContainer = new Container();
@@ -112,6 +120,7 @@ export class Player {
             if (e.code === 'KeyD') this.keys.right = true;
             if (e.code === 'Space') this.keys.shoot = true;
             if (e.code === 'KeyR') this.keys.reload = true;
+            if (e.code === 'ShiftLeft') this.keys.dodge = true;
         });
     
         window.addEventListener('keyup', (e) => {
@@ -121,6 +130,7 @@ export class Player {
             if (e.code === 'KeyD') this.keys.right = false;
             if (e.code === 'Space') this.keys.shoot = false;
             if (e.code === 'KeyR') this.keys.reload = false;
+            if (e.code === 'ShiftLeft') this.keys.dodge = false;
         });
     }
 
@@ -229,6 +239,81 @@ export class Player {
         }, 1000); // Keep shells visible for 1 second after reload
     }
 
+    dodge() {
+        if (this.isDodging || Date.now() - this.lastDodgeTime < this.dodgeCooldown) return;
+
+        this.isDodging = true;
+        this.invincible = true;
+        this.lastDodgeTime = Date.now();
+
+        const originalSpeed = this.speed;
+        this.speed = this.dodgeSpeed;
+
+        const direction = {
+            x: (this.keys.left ? -1 : 0) + (this.keys.right ? 1 : 0),
+            y: (this.keys.up ? -1 : 0) + (this.keys.down ? 1 : 0)
+        };
+
+        const normalize = (vector) => {
+            const length = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+            return { x: vector.x / length, y: vector.y / length };
+        };
+
+        const normalizedDirection = normalize(direction);
+
+        const dodgeInterval = setInterval(() => {
+            this.createDodgeTrail();
+        }, 10); // Create trail every 10ms
+
+        const dodgeMovement = setInterval(() => {
+            this.sprite.x += normalizedDirection.x * this.dodgeSpeed;
+            this.sprite.y += normalizedDirection.y * this.dodgeSpeed;
+        }, 16); // Move every 16ms (approx. 60fps)
+
+        setTimeout(() => {
+            clearInterval(dodgeInterval);
+            clearInterval(dodgeMovement);
+            this.isDodging = false;
+            this.invincible = false;
+            this.speed = originalSpeed;
+        }, this.dodgeDuration);
+    }
+
+    createDodgeTrail() {
+        const trailSprite = new Sprite(this.idleSprite.texture);
+        trailSprite.x = this.sprite.x;
+        trailSprite.y = this.sprite.y;
+        trailSprite.anchor.set(0.5);
+        trailSprite.alpha = 0.5; // Start with half opacity
+        trailSprite.scale.set(this.sprite.scale.x, this.sprite.scale.y); // Match player scale
+
+        this.app.stage.addChild(trailSprite);
+        this.dodgeTrail.push(trailSprite);
+
+        setTimeout(() => {
+            this.app.stage.removeChild(trailSprite);
+            this.dodgeTrail = this.dodgeTrail.filter(s => s !== trailSprite);
+        }, 150); // Remove trail sprite after 100ms
+    }s
+
+    createDodgeTrail() {
+        const trailSprite = new Sprite(this.idleSprite.texture);
+        trailSprite.x = this.sprite.x;
+        trailSprite.y = this.sprite.y;
+        trailSprite.anchor.set(0.5);
+        trailSprite.alpha = 0.5; // Start with half opacity
+        trailSprite.scale.set(this.sprite.scale.x, this.sprite.scale.y); // Match player scale
+
+        this.app.stage.addChild(trailSprite);
+        this.dodgeTrail.push(trailSprite);
+
+        setTimeout(() => {
+            
+            this.app.stage.removeChild(trailSprite);
+            this.dodgeTrail = this.dodgeTrail.filter(s => s !== trailSprite);
+        }, 100); // Remove trail sprite after 100ms
+    }
+
     playDeathAnimation() {
         // Disable player movement
         this.keys.up = false;
@@ -241,6 +326,9 @@ export class Player {
         // Set isDead flag to true
         this.isDead = true;
     
+        // Notify the enemy manager that the player is dead
+        this.app.enemyManager.onPlayerDeath();
+    
         // Hide other sprites
         this.idleSprite.visible = false;
         for (const direction in this.walkingSprites) {
@@ -251,10 +339,8 @@ export class Player {
         // Play death animation
         this.deathSprite.visible = true;
         this.deathSprite.gotoAndPlay(0);
-    
     }
     
-
     updateGunRotation(targetCircle) {
         const dx = targetCircle.x - this.sprite.x;
         const dy = targetCircle.y - this.sprite.y;
@@ -285,6 +371,10 @@ export class Player {
 
     update(targetCircle) {
         if (this.isDead) return; // Prevent update if player is dead
+
+        if (this.keys.dodge && !this.isDodging) {
+            this.dodge();
+        } 
     
         let isMoving = false;
     
@@ -353,6 +443,7 @@ export class Player {
                 this.walkingSprites[direction].stop();
             }
         }
+        
     
         // Update bullets
         this.bullets.forEach(bullet => {
@@ -378,5 +469,13 @@ export class Player {
     despawnBullets() {
         this.bullets.forEach(bullet => bullet.despawn());
         this.bullets = [];
+        this.clearDodgeTrail(); // Clear dodge trail when entering a new room
+    }
+
+    clearDodgeTrail() {
+        this.dodgeTrail.forEach(trailSprite => {
+            this.app.stage.removeChild(trailSprite);
+        });
+        this.dodgeTrail = [];
     }
 }

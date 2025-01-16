@@ -17,11 +17,11 @@ export class EnemyManager {
         if (room.type === 'spawnRoom' || room.type === 'shopRoom' || this.clearedRooms.has(room.id)) return;
     
         const enemyClasses = {
-            1: [Slime], // Add Slime as a floor 1 enemy
+            1: [{ type: Slime, cost: 4 },{ type: Slime, cost: 3 }], // Add Slime as a floor 1 enemy with a cost of 1 token
         };
     
         const bossClasses = {
-            1: [Slime], // Add Slime as a floor 1 boss
+            1: [{ type: Slime }], // Add Slime as a floor 1 boss
         };
     
         const currentFloor = this.mapManager.currentFloor;
@@ -29,18 +29,29 @@ export class EnemyManager {
         const roomSize = this.mapManager.roomSize; // Get the room size from MapManager
     
         if (room.type === 'bossRoom') {
-            const boss = new enemyClass[0](this.app, this.player, room, roomSize, this.textureManager, 3, 2); // Example speed and damage
+            // Select and spawn one random boss
+            const randomIndex = Math.floor(Math.random() * bossClasses[currentFloor].length);
+            const selectedBoss = bossClasses[currentFloor][randomIndex];
+            const boss = new selectedBoss.type(this.app, this.player, room, roomSize, this.textureManager, 2, 1); // Example speed and damage
             this.enemies.push(boss);
             this.app.stage.addChild(boss.sprite);
             console.log(`Spawned boss: ${boss.constructor.name} at (${boss.sprite.x}, ${boss.sprite.y})`); // Debugging information
         } else {
-            const numEnemies = Math.floor(Math.random() * 5) + 3; // Random number of enemies between 3 and 7
-            for (let i = 0; i < numEnemies; i++) {
+            let enemyTokens = 10; // Set the number of tokens for regular rooms
+    
+            while (enemyTokens > 0) {
                 const randomIndex = Math.floor(Math.random() * enemyClass.length);
-                const enemy = new enemyClass[randomIndex](this.app, this.player, room, roomSize, this.textureManager, 2, 1); // Example speed and damage
-                this.enemies.push(enemy);
-                this.app.stage.addChild(enemy.sprite);
-                console.log(`Spawned enemy: ${enemy.constructor.name} at (${enemy.sprite.x}, ${enemy.sprite.y})`); // Debugging information
+                const selectedEnemy = enemyClass[randomIndex];
+    
+                if (enemyTokens >= selectedEnemy.cost) {
+                    const enemy = new selectedEnemy.type(this.app, this.player, room, roomSize, this.textureManager, 2, 1); // Example speed and damage
+                    this.enemies.push(enemy);
+                    this.app.stage.addChild(enemy.sprite);
+                    console.log(`Spawned enemy: ${enemy.constructor.name} at (${enemy.sprite.x}, ${enemy.sprite.y})`); // Debugging information
+                    enemyTokens -= selectedEnemy.cost;
+                } else {
+                    break; // Stop spawning if there are not enough tokens for the selected enemy
+                }
             }
         }
     }
@@ -64,6 +75,10 @@ export class EnemyManager {
                 this.clearedRooms.add(this.mapManager.currentRoom.id); // Mark the room as cleared
             }
         }
+    }
+
+    onPlayerDeath() {
+        this.enemies.forEach(enemy => enemy.onPlayerDeath());
     }
 
     despawnEnemies() {

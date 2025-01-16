@@ -46,7 +46,6 @@ export class TextureManager {
             await Assets.load('./src/Sprites/Player/Player Moving Side 1.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Side 2.png'),
             await Assets.load('./src/Sprites/Player/Player Moving Side 3.png'),
-            await Assets.load('./src/Sprites/Player/Player Moving Side 4.png')
         ];
 
         // Load Slime textures
