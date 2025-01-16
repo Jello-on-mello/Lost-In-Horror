@@ -2,9 +2,9 @@ import { Application , Sprite} from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/di
 import { MapManager } from './Game/Manager/MapManager.js';
 import { EnemyManager } from './Game/Manager/EnemyManager.js';
 import CheatManager from './Game/Manager/CheatManager.js';
-import { TextureManager } from './Game/Manager/textureManager.js';
+import { TextureManager } from './Game/Manager/TextureManager.js';
 import { Player } from './Game/Player/Player.js';
-import { createCrosshair } from './Game/Player/crosshair.js';
+import { createCrosshair } from './Game/Player/Crosshair.js';
 import { LoadingScreen } from './Game/UI/LoadingScreen.js';
 
 (async () => {
