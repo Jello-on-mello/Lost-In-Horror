@@ -17,11 +17,17 @@ export class EnemyManager {
         if (room.type === 'spawnRoom' || room.type === 'shopRoom' || this.clearedRooms.has(room.id)) return;
     
         const enemyClasses = {
-            1: [{ type: Slime, cost: 4 },{ type: Slime, cost: 3 }], // Add Slime as a floor 1 enemy with a cost of 1 token
+            1: [{ type: Slime, cost: 4 },{ type: Slime, cost: 3 }],
+            2: [{ type: Slime, cost: 4 },{ type: Slime, cost: 3 }],
+            3: [{ type: Slime, cost: 4 },{ type: Slime, cost: 3 }],
+            4: [{ type: Slime, cost: 4 },{ type: Slime, cost: 3 }] // Add Slime as a floor 1 enemy with a cost of 1 token
         };
     
         const bossClasses = {
-            1: [{ type: Slime }], // Add Slime as a floor 1 boss
+            1: [{ type: Slime }],
+            2: [{ type: Slime }],
+            3: [{ type: Slime }],
+            4: [{ type: Slime }], // Add Slime as a floor 1 boss
         };
     
         const currentFloor = this.mapManager.currentFloor;

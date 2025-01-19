@@ -1,4 +1,4 @@
-import { Sprite, Graphics, AnimatedSprite, Container, Assets } from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
+import { Sprite, Graphics, AnimatedSprite, Container, Assets, Ticker} from 'https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.mjs';
 import { Bullet } from '../Manager/BulletManager.js';
 
 export class Player {
@@ -18,8 +18,11 @@ export class Player {
         this.speed = 2.5;
         this.hp = 3;
         this.damage = 1;
+
         this.isDodging = false;
-        this.invincible = false;
+        this.invincibilityDuration = 500; // 0.5 seconds
+        this.lastDamageTime = 0;
+        this.isInvincible = false
 
         this.dodgeDuration = 50; // Duration of the dodge in milliseconds
         this.dodgeSpeed = 10; // Speed during dodge
@@ -102,15 +105,24 @@ export class Player {
     }
 
     takeDamage(damage = 1) {
-        if (this.isDead) return; // Prevent taking damage if player is dead
-    
-        this.hp -= damage;
-        console.log(`Player HP: ${this.hp}`);
+    if (this.isDead || this.isInvincible) return;
+
+    this.hp -= damage;
+    console.log(`Player HP: ${this.hp}`);
+
+    // Set invincibility
+    this.isInvincible = true;
+    this.lastDamageTime = Date.now();
+    this.sprite.alpha = 0.5; // Visual feedback for invincibility
+
+    // Create shockwave and push enemies
+    this.createDamageShockwave();
+
         if (this.hp <= 0) {
             console.log('Game Over!');
             this.playDeathAnimation();
         }
-    }
+    }   
 
     setupControls() {
         window.addEventListener('keydown', (e) => {
@@ -239,45 +251,82 @@ export class Player {
         }, 1000); // Keep shells visible for 1 second after reload
     }
 
-    dodge() {
-        if (this.isDodging || Date.now() - this.lastDodgeTime < this.dodgeCooldown) return;
-
-        this.isDodging = true;
-        this.invincible = true;
-        this.lastDodgeTime = Date.now();
-
-        const originalSpeed = this.speed;
-        this.speed = this.dodgeSpeed;
-
-        const direction = {
-            x: (this.keys.left ? -1 : 0) + (this.keys.right ? 1 : 0),
-            y: (this.keys.up ? -1 : 0) + (this.keys.down ? 1 : 0)
-        };
-
-        const normalize = (vector) => {
-            const length = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-            return { x: vector.x / length, y: vector.y / length };
-        };
-
-        const normalizedDirection = normalize(direction);
-
-        const dodgeInterval = setInterval(() => {
-            this.createDodgeTrail();
-        }, 10); // Create trail every 10ms
-
-        const dodgeMovement = setInterval(() => {
-            this.sprite.x += normalizedDirection.x * this.dodgeSpeed;
-            this.sprite.y += normalizedDirection.y * this.dodgeSpeed;
-        }, 16); // Move every 16ms (approx. 60fps)
-
-        setTimeout(() => {
-            clearInterval(dodgeInterval);
-            clearInterval(dodgeMovement);
-            this.isDodging = false;
-            this.invincible = false;
-            this.speed = originalSpeed;
-        }, this.dodgeDuration);
+    createDamageShockwave() {
+        // Verify player sprite exists
+        if (!this.sprite) {
+            console.error('No player sprite found');
+            return;
+        }
+    
+        // Configure shockwave parameters
+        const stunRadius = 150; // Larger radius
+        const pushForce = 100; // Stronger push
+    
+        // Push enemies
+        this.app.enemyManager.enemies.forEach(enemy => {
+            if (!enemy || !enemy.sprite) return;
+    
+            const dx = enemy.sprite.x - this.sprite.x;
+            const dy = enemy.sprite.y - this.sprite.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+    
+            if (distance < stunRadius) {
+                // Calculate normalized direction
+                const angle = Math.atan2(dy, dx);
+                const pushX = Math.cos(angle) * pushForce * (1 - distance/stunRadius);
+                const pushY = Math.sin(angle) * pushForce * (1 - distance/stunRadius);
+                // Apply push force
+                enemy.sprite.x += pushX;
+                enemy.sprite.y += pushY;
+                enemy.applyStun(1000);
+                
+                console.log('Enemy pushed:', pushX, pushY);
+            }
+        });
     }
+
+    dodge() {
+    if (this.isDodging || Date.now() - this.lastDodgeTime < this.dodgeCooldown) return;
+
+    const direction = {
+        x: (this.keys.left ? -1 : 0) + (this.keys.right ? 1 : 0),
+        y: (this.keys.up ? -1 : 0) + (this.keys.down ? 1 : 0)
+    };
+
+    // Check if the direction vector is zero
+    if (direction.x === 0 && direction.y === 0) return;
+
+    this.isDodging = true;
+    this.invincible = true;
+    this.lastDodgeTime = Date.now();
+
+    const originalSpeed = this.speed;
+    this.speed = this.dodgeSpeed;
+
+    const normalize = (vector) => {
+        const length = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+        return { x: vector.x / length, y: vector.y / length };
+    };
+
+    const normalizedDirection = normalize(direction);
+
+    const dodgeInterval = setInterval(() => {
+        this.createDodgeTrail();
+    }, 10); // Create trail every 10ms
+
+    const dodgeMovement = setInterval(() => {
+        this.sprite.x += normalizedDirection.x * this.dodgeSpeed;
+        this.sprite.y += normalizedDirection.y * this.dodgeSpeed;
+    }, 16); // Move every 16ms (approx. 60fps)
+
+    setTimeout(() => {
+        clearInterval(dodgeInterval);
+        clearInterval(dodgeMovement);
+        this.isDodging = false;
+        this.invincible = false;
+        this.speed = originalSpeed;
+    }, this.dodgeDuration);
+}
 
     createDodgeTrail() {
         const trailSprite = new Sprite(this.idleSprite.texture);
@@ -390,7 +439,13 @@ export class Player {
     }
 
     update(targetCircle) {
-        if (this.isDead) return; // Prevent update if player is dead
+    if (this.isDead) return;
+
+        // Check if invincibility should end
+        if (this.isInvincible && Date.now() - this.lastDamageTime >= this.invincibilityDuration) {
+            this.isInvincible = false;
+            this.sprite.alpha = 1;
+        }
 
         if (this.keys.dodge && !this.isDodging) {
             this.dodge();

@@ -16,6 +16,9 @@ export class Slime {
         this.isDead = false;
         this.wandering = false;
         this.wanderTarget = null;
+        this.stunned = false;
+        this.normalOpacity = 1;
+        this.stunnedOpacity = 0.5;
     
         this.textures = {
             idle: this.textureManager.getTexture('SlimeIdle'),
@@ -50,6 +53,13 @@ export class Slime {
 
     update(enemies) {
         if (this.isDead) return;
+
+        if (this.stunned) {
+            this.sprite.alpha = this.stunnedOpacity;
+            return;
+        }
+
+        this.sprite.alpha = this.normalOpacity;
 
         if (this.player.isDead) {
             if (!this.wandering) {
@@ -89,13 +99,18 @@ export class Slime {
         this.sprite.x += (dx / distance) * this.speed;
         this.sprite.y += (dy / distance) * this.speed;
 
+        let newTextures;
         if (Math.abs(dx) > Math.abs(dy)) {
-            this.sprite.textures = this.textures.walkSide;
+            newTextures = this.textures.walkSide;
             this.sprite.scale.x = dx > 0 ? Math.abs(this.sprite.scale.x) : -Math.abs(this.sprite.scale.x);
         } else {
-            this.sprite.textures = dy > 0 ? this.textures.walkDown : this.textures.walkUp;
+            newTextures = dy > 0 ? this.textures.walkDown : this.textures.walkUp;
         }
-        this.sprite.play();
+
+        if (this.sprite.textures !== newTextures) {
+            this.sprite.textures = newTextures;
+            this.sprite.play();
+        }
     }
 
     startWandering() {
@@ -125,18 +140,33 @@ export class Slime {
             this.sprite.x += (dx / distance) * this.speed;
             this.sprite.y += (dy / distance) * this.speed;
 
+            let newTextures;
             if (Math.abs(dx) > Math.abs(dy)) {
-                this.sprite.textures = this.textures.walkSide;
+                newTextures = this.textures.walkSide;
                 this.sprite.scale.x = dx > 0 ? Math.abs(this.sprite.scale.x) : -Math.abs(this.sprite.scale.x);
             } else {
-                this.sprite.textures = dy > 0 ? this.textures.walkDown : this.textures.walkUp;
+                newTextures = dy > 0 ? this.textures.walkDown : this.textures.walkUp;
             }
-            this.sprite.play();
+
+            if (this.sprite.textures !== newTextures) {
+                this.sprite.textures = newTextures;
+                this.sprite.play();
+            }
         }
     }
 
     onPlayerDeath() {
         this.startWandering();
+    }
+
+    applyStun(duration = 1000) {
+        this.stunned = true;
+        this.sprite.alpha = this.stunnedOpacity;
+        
+        setTimeout(() => {
+            this.stunned = false;
+            this.sprite.alpha = this.normalOpacity;
+        }, duration);
     }
 
     takeDamage(damage) {

@@ -404,6 +404,7 @@ export class MapManager {
         this.currentFloor++;
         this.generateMap();
         this.loadCurrentRoom(this.spawnRoom);
+        this.enemyManager.clearedRooms.clear(); // Clear the list of cleared rooms
     }
 
     getNextFloorDoorBounds() {
