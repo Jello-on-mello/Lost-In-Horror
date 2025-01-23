@@ -99,9 +99,11 @@ import { LoadingScreen } from './Game/UI/LoadingScreen.js';
 
     // Main game loop
     app.ticker.add((delta) => {
-        mapManager.update();
-        player.update(crosshair);
-        enemyManager.update();
-        loadingScreen.update(delta);
+        if (!document.hidden) {
+            mapManager.update();
+            player.update(crosshair);
+            enemyManager.update();
+            loadingScreen.update(delta);
+        }
     });
 })();

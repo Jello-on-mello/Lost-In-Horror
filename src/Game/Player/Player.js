@@ -15,7 +15,7 @@ export class Player {
         this.sprite.addChild(this.idleSprite);
 
         this.isDead = false;
-        this.speed = 2.5;
+        this.speed = 5;
         this.hp = 3;
         this.damage = 1;
 
@@ -104,7 +104,7 @@ export class Player {
         this.setupControls();
     }
 
-    takeDamage(damage = 1) {
+    takeDamage(damage) {
     if (this.isDead || this.isInvincible) return;
 
     this.hp -= damage;
@@ -147,7 +147,11 @@ export class Player {
     }
 
     shootShotgun() {
-        if (this.currentShells <= 0 || this.isReloading) return;
+        if (this.isReloading) return;
+        if (this.currentShells <= 0 ){
+            this.reload();
+            return;
+        };
 
         const spreadAngle = 0.261799; // ~15 degrees
         const numberOfBullets = 5;

@@ -4,8 +4,8 @@ export class Bullet {
     constructor(faction, direction, speed, spawnPoint, numBullets, damage) {
         this.faction = faction;
         this.direction = direction;
-        this.speed = speed;
-        this.damage = damage; // Add damage property
+        this.speed = speed * 2; // Zwiększ prędkość pocisków
+        this.damage = damage;
         this.bullets = [];
 
         for (let i = 0; i < numBullets; i++) {
@@ -17,8 +17,8 @@ export class Bullet {
             bullet.x = spawnPoint.x;
             bullet.y = spawnPoint.y;
 
-            bullet.vx = Math.cos(direction) * speed;
-            bullet.vy = Math.sin(direction) * speed;
+            bullet.vx = Math.cos(direction) * this.speed;
+            bullet.vy = Math.sin(direction) * this.speed;
 
             this.bullets.push(bullet);
         }
@@ -36,25 +36,22 @@ export class Bullet {
     
         this.bullets.forEach((bullet, bulletIndex) => {
             enemies.forEach((enemy) => {
-                // Skip if enemy is null, destroyed, or doesn't have a sprite
                 if (!enemy || enemy.isDead || !enemy.sprite || enemy.sprite._destroyed) return;
     
                 if (this.isColliding(bullet, enemy.sprite)) {
-                    enemy.takeDamage(this.damage); // Use bullet's damage value
+                    enemy.takeDamage(this.damage);
                     bullet.destroy();
                     bulletsToRemove.push(bulletIndex);
                 }
             });
         });
 
-        // Remove bullets after iteration
         bulletsToRemove.sort((a, b) => b - a).forEach(index => {
             this.bullets.splice(index, 1);
         });
     }
 
     isColliding(bullet, enemySprite) {
-        // Skip if sprite is null, destroyed, or has no parent
         if (!bullet || bullet._destroyed || !bullet.parent) return false;
         if (!enemySprite || enemySprite._destroyed || !enemySprite.parent) return false;
     

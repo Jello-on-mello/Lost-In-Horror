@@ -10,7 +10,7 @@ export class Slime {
         this.stage = stage;
     
         this.hp = 1;
-        this.speed = stage === 1 ? 0.25 : stage === 2 ? 0.5 : stage === 3 ? 0.75 : 1;
+        this.speed = stage === 1 ? 1 : stage === 2 ? 2 : 3;
         this.damage = 1;
     
         this.isDead = false;
